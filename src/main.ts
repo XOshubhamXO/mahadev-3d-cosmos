@@ -309,23 +309,23 @@ class App {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-amber-400 font-mono text-xs uppercase tracking-wider font-bold">1. 3D Logarithmic Golden Spiral</span>
+              <span class="text-amber-400 font-mono text-xs uppercase tracking-wider font-bold">1. 4 Sacred Concentric Golden Spheres</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                Rendered as an exact celestial curve ($r = a \\cdot e^{b\\theta}$ where $b = \\frac{\\ln\\phi}{\\pi/2} \\approx 0.30635$). Concentric orbital guide rings follow Fibonacci radii: <strong class="text-white">8, 13, 21, 34, 55, 89 units</strong>.
+                24 agents are organized across 4 concentric golden spheres with radii <strong class="text-white">R₁ = 16.0, R₂ = 25.89 (16ϕ), R₃ = 41.89 (16ϕ²), R₄ = 67.78 (16ϕ³)</strong>, maintaining perfect bilateral and radial axial symmetry.
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-cyan-400 font-mono text-xs uppercase tracking-wider font-bold">2. Golden Angle Cosmic Distribution</span>
+              <span class="text-cyan-400 font-mono text-xs uppercase tracking-wider font-bold">2. Centrosymmetric Platonic Solids</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                All 24 agents are positioned using the Golden Angle <strong class="text-white">$\\psi = 137.507764^{\\circ} = 2\\pi(1 - 1/\\phi)$</strong>, guaranteeing zero planetary collision and optimal spatial packing across 3D space.
+                Every node is a strictly symmetric solid (Dodecahedron, Icosahedron, Octahedron, Cuboctahedron, Golden Torus) enclosed within a <strong class="text-white">ϕ^0.5 wireframe cage</strong> and dual <strong class="text-white">ϕ gyroscopic halos</strong>.
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-emerald-400 font-mono text-xs uppercase tracking-wider font-bold">3. Keplerian Harmonic Speeds</span>
+              <span class="text-emerald-400 font-mono text-xs uppercase tracking-wider font-bold">3. Symmetrical Keplerian Speeds</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                Orbital velocity decays harmonically with distance: $\\omega_n = \\frac{\\omega_0}{\\phi^{(0.9n / 24)}}$, producing perfectly synchronous celestial orbital mechanics.
+                Orbital velocity decays harmonically with distance: $\\omega_k = \\omega_0 / \\phi^k$, alternating rotation directions across concentric tiers for celestial equilibrium.
               </p>
             </div>
 

@@ -153,13 +153,13 @@ export class AgentInspector3D {
       case 'tetrahedron':
         return new THREE.TetrahedronGeometry(size, 0);
       case 'torusKnot':
-        return new THREE.TorusKnotGeometry(size * 0.65, 0.25, 64, 16);
-      case 'gearSphere':
-        return new THREE.IcosahedronGeometry(size, 1);
-      case 'shieldGem':
-        return new THREE.ConeGeometry(size, size * 1.5, 6);
-      case 'stellarPolyhedron':
+        return new THREE.TorusKnotGeometry(size * 0.65, 0.22, 64, 16);
+      case 'cuboctahedron':
         return new THREE.OctahedronGeometry(size, 1);
+      case 'icosidodecahedron':
+        return new THREE.DodecahedronGeometry(size, 1);
+      case 'goldenTorus':
+        return new THREE.TorusGeometry(size * 0.85, size * 0.25, 16, 48);
       case 'icosahedron':
       default:
         return new THREE.IcosahedronGeometry(size, 0);
