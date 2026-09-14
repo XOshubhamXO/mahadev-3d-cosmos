@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-[#040711]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MahaDev AI OS — The Tandava 3D Cosmos & Pantheon (v3.2.0)</title>
+  <meta name="description" content="Hardware-Accelerated 3D WebGL Visualization & Interactive Portfolio of the MahaDev Autonomous AI Virtual Company Operating System (v3.2.0)">
+  
+  <!-- Curated Luxury Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            void: '#040711',
+            obsidian: '#080d1a',
+            surface: 'rgba(8, 13, 26, 0.75)',
+            gold: {
+              300: '#fef08a',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+              raw: '#d97706'
+            },
+            astral: {
+              400: '#38bdf8',
+              500: '#0284c7',
+              900: '#0c4a6e'
+            }
+          },
+          fontFamily: {
+            serif: ['Cinzel', 'Georgia', 'serif'],
+            cormorant: ['Cormorant Garamond', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          spacing: {
+            'phi-1': '2px',
+            'phi-2': '3px',
+            'phi-3': '5px',
+            'phi-4': '8px',
+            'phi-5': '13px',
+            'phi-6': '21px',
+            'phi-7': '34px',
+            'phi-8': '55px',
+            'phi-9': '89px',
+            'phi-10': '144px',
+            'phi-11': '233px',
+            'phi-12': '377px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Golden Ratio & Typography Craft Foundations */
+    :root {
+      --phi: 1.61803398875;
+      --phi-angle: 137.507764deg;
+      --glass-bg: rgba(6, 10, 22, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 34px 68px -13px rgba(0, 0, 0, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Custom Hairline Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(4, 7, 17, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(217, 119, 6, 0.5);
+    }
+
+    .luxury-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-specular);
+    }
+
+    .hairline-border {
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .gold-glow {
+      box-shadow: 0 0 25px -5px rgba(217, 119, 6, 0.35);
+    }
+
+    .astral-glow {
+      box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Tabular Numerals for clean telemetry */
+    .tnum {
+      font-feature-settings: "tnum" 1, "ss01" 1;
+    }
+
+    /* Magnetic Ambient Cursor */
+    @media (pointer: fine) {
+      body {
+        cursor: crosshair;
+      }
+    }
+  </style>
+</head>
+<body class="bg-void text-slate-100 font-sans h-full overflow-hidden select-none relative">
+
+  <!-- Tactile SVG Film Grain Texture Overlay (Organic Physical Depth) -->
+  <svg class="pointer-events-none fixed inset-0 z-40 h-full w-full opacity-[0.035] mix-blend-overlay" aria-hidden="true">
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+  </svg>
+
+  <!-- Deep Celestial Atmospheric Vignette -->
+  <div class="pointer-events-none fixed inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(2,6,18,0.88)_100%)]"></div>
+
+  <!-- Magnetic Ambient Cursor Rings -->
+  <div id="magnetic-cursor-dot" class="pointer-events-none fixed z-50 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 opacity-0 transition-opacity duration-300"></div>
+  <div id="magnetic-cursor-ring" class="pointer-events-none fixed z-50 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-400/40 opacity-0 transition-all duration-300 ease-out"></div>
+
+  <!-- 3D WebGL Canvas Layer -->
+  <div id="canvas-container" class="absolute inset-0 z-0"></div>
+
+  <!-- Primary Heads-Up Interface Overlay -->
+  <div class="relative z-20 flex flex-col justify-between h-full p-4 sm:p-6 pointer-events-none">
+
+    <!-- Top Architectural Header -->
+    <header class="flex flex-wrap items-center justify-between gap-4 pointer-events-auto luxury-panel px-5 py-3 rounded-2xl">
+      
+      <!-- Brand & Version Identity -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/20 via-slate-900 to-cyan-500/20 border border-amber-500/40 flex items-center justify-center font-serif text-base font-bold text-amber-300 shadow-lg shadow-amber-950/40">
+          ॐ
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="font-serif font-bold tracking-[0.12em] text-sm text-white">MAHADEV</span>
+            <span class="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 tnum">v3.2.0</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400 tracking-wider">
+            TANDAVA 3D ENGINE · Φ HARMONICS
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation Dossier Links -->
+      <nav class="hidden lg:flex items-center space-x-1 font-mono text-[11px]">
+        <button id="nav-philosophy" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+          Philosophy
+        </button>
+        <button id="nav-phi" class="px-3 py-1.5 rounded-lg text-amber-300 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all font-semibold">
+          Φ Harmonics
+        </button>
+        <button id="nav-agents" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+          Pantheon (24)
+        </button>
+        <button id="nav-hardware" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+          Trishula Hardware
+        </button>
+        <button id="nav-verification" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+          9-Tier Gate
+        </button>
+        <button id="nav-terminal" class="px-3.5 py-1.5 rounded-lg text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all font-semibold flex items-center gap-1.5">
+          <svg class="w-3 h-3 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          <span>Console</span>
+        </button>
+      </nav>
+
+      <!-- Telemetry & Harmonic Toggles -->
+      <div class="flex items-center space-x-2.5 font-mono text-[11px]">
+        <!-- Golden Spiral Toggle -->
+        <button id="btn-toggle-phi" class="px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 transition-all flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10 6 6 0 0 1-6 6 3 3 0 0 1-3-3 1 1 0 0 1 1-1"></path></svg>
+          <span id="phi-toggle-label">Φ Spiral: On</span>
+        </button>
+
+        <!-- FPS & Telemetry -->
+        <div class="hidden sm:flex items-center space-x-2 px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/5 tnum text-[10px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="telemetry-fps" class="text-slate-300 font-medium">60 FPS · Φ 1.618</span>
+        </div>
+
+        <!-- 432 Hz Drone Toggle -->
+        <button id="btn-audio-toggle" class="px-3 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-amber-500/40 text-slate-300 hover:text-white transition-all flex items-center gap-2">
+          <span id="audio-wave-icon" class="flex items-center gap-0.5 h-3">
+            <span class="w-0.5 h-1.5 bg-slate-400 rounded-full"></span>
+            <span class="w-0.5 h-3 bg-slate-400 rounded-full"></span>
+            <span class="w-0.5 h-2 bg-slate-400 rounded-full"></span>
+          </span>
+          <span id="audio-toggle-label">432Hz Spanda</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Left Architectural Viewport Guide -->
+    <div id="subtle-instruction" class="pointer-events-auto self-start mt-3 max-w-[280px] luxury-panel p-4 rounded-xl space-y-2">
+      <div class="flex items-center justify-between border-b border-white/5 pb-2">
+        <div class="flex items-center space-x-2 text-slate-300 font-mono text-[10px] tracking-wider uppercase font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>Cosmic Viewport</span>
+        </div>
+        <button id="btn-toggle-rotate" class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-white/20 transition-all">
+          Orbit: Active
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400 font-sans leading-relaxed">
+        • Click labeled celestial nodes to inspect agent dossier<br/>
+        • Drag canvas to rotate cosmic coordinate planes<br/>
+        • Scroll wheel to zoom through Fibonacci orbits
+      </p>
+      <div class="pt-1 flex items-center gap-1.5 lg:hidden">
+        <button id="mob-modal-btn" class="w-full py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-[10px] font-mono font-bold border border-amber-500/40 transition-all">
+          Open Knowledge Dossier
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Pancha Kritya Architectural Rail -->
+    <footer class="pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4 luxury-panel px-6 py-4 rounded-2xl">
+      <!-- Active Phase Info -->
+      <div class="text-center md:text-left space-y-1">
+        <div class="flex items-center justify-center md:justify-start space-x-2.5">
+          <span id="hud-mode-sanskrit" class="font-cormorant italic text-lg text-amber-300 font-semibold">स्थिति (Sthiti)</span>
+          <span class="text-slate-600">/</span>
+          <span id="hud-mode-title" class="text-xs font-semibold text-white tracking-wide uppercase font-sans">Preservation & Equilibrium</span>
+        </div>
+        <p id="hud-mode-desc" class="text-[11px] text-slate-400 font-sans leading-tight">
+          9-Tier Correctness Verification, LSP diagnostics, and local container orchestration.
+        </p>
+      </div>
+
+      <!-- 5 Cosmic Phase Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-1.5">
+        <button id="btn-mode-srishti" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
+          1. SRISHTI
+        </button>
+        <button id="btn-mode-sthiti" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/50 font-semibold shadow-md shadow-amber-950/40 transition-all">
+          2. STHITI
+        </button>
+        <button id="btn-mode-samhara" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
+          3. SAMHARA
+        </button>
+        <button id="btn-mode-tirobhava" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
+          4. TIROBHAVA
+        </button>
+        <button id="btn-mode-anugraha" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
+          5. ANUGRAHA
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Dynamic Hover Card for 3D Nodes -->
+  <div id="agent-hover-card" class="fixed z-40 pointer-events-none opacity-0 transition-opacity duration-200 luxury-panel p-4 rounded-2xl max-w-xs text-left shadow-2xl">
+    <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-2 mb-2">
+      <div>
+        <span id="hover-dept" class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-cyan-300 border border-cyan-800/60"></span>
+        <h4 id="hover-name" class="font-bold text-white text-sm mt-1 font-sans"></h4>
+      </div>
+      <span id="hover-tier" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"></span>
+    </div>
+    <p id="hover-archetype" class="text-xs font-cormorant italic text-amber-300 mb-1"></p>
+    <p id="hover-mandate" class="text-[11px] text-slate-300 font-sans leading-relaxed line-clamp-2"></p>
+    <div class="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-400">
+      <span>Click node for 3D dossier</span>
+      <span class="text-amber-400">→</span>
+    </div>
+  </div>
+
+  <!-- Agent Details Slide Drawer with Embedded 3D Inspector Viewport -->
+  <aside id="agent-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[460px] bg-[#070b18]/95 border-l border-white/10 backdrop-blur-3xl z-50 transform translate-x-full transition-transform duration-300 p-6 flex flex-col justify-between overflow-y-auto space-y-5 shadow-2xl">
+    <div class="space-y-4">
+      <!-- Drawer Header -->
+      <div class="flex items-start justify-between border-b border-white/10 pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="drawer-dept" class="text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/60"></span>
+            <span id="drawer-tier" class="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"></span>
+          </div>
+          <h3 id="drawer-name" class="text-2xl font-serif font-bold text-white mt-2"></h3>
+          <p id="drawer-role" class="text-xs font-mono text-slate-400 mt-0.5"></p>
+          <p id="drawer-archetype" class="text-xs font-cormorant italic text-amber-300 mt-1 font-semibold"></p>
+        </div>
+        <button id="btn-close-drawer" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all" aria-label="Close Drawer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Embedded 3D Model Viewport (Golden Rectangle Aspect Ratio: 1 : 1.618) -->
+      <div class="relative w-full h-52 rounded-2xl bg-black/60 border border-white/10 overflow-hidden shadow-inner flex items-center justify-center">
+        <div id="drawer-3d-viewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+        <div class="absolute bottom-2.5 left-3 pointer-events-none flex items-center gap-1.5 text-[10px] font-mono text-slate-300 bg-black/80 px-2.5 py-1 rounded-md border border-white/10">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Interactive 3D Mesh (Drag to inspect)</span>
+        </div>
+      </div>
+
+      <!-- Descriptive Information Dossier -->
+      <div class="space-y-3 font-mono text-xs">
+        <div class="p-3.5 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
+          <span class="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">Deep Role & Architecture</span>
+          <p id="drawer-desc" class="text-slate-200 text-[12px] leading-relaxed font-sans"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
+            <span class="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">Hardware Target</span>
+            <p id="drawer-hardware" class="text-cyan-300 text-[11px] leading-tight font-sans font-medium"></p>
+          </div>
+          <div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
+            <span class="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">Verification Ladder</span>
+            <p id="drawer-verification" class="text-emerald-400 text-[11px] leading-tight font-sans font-medium"></p>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-white/[0.02] rounded-xl border border-white/5 space-y-1.5">
+          <span class="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">Sample Workflow Execution</span>
+          <div class="bg-black/80 p-2.5 rounded-lg border border-white/10 text-[11px] text-amber-300 break-all font-mono">
+            &gt; <span id="drawer-workflow"></span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-white/[0.02] rounded-xl border border-white/5 space-y-2">
+          <span class="text-slate-400 block uppercase tracking-wider text-[9px] font-bold">Granted Capabilities & Tools</span>
+          <div id="drawer-tools" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-3 bg-white/[0.03] rounded-xl border border-white/5 text-center font-mono text-[10px] text-slate-400">
+      MahaDev AI OS v3.2.0 · Zero-Trust Role Bounded Specialization
+    </div>
+  </aside>
+
+  <!-- Informative Knowledge Modal (Editorial Monograph Layout) -->
+  <div id="info-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 hidden">
+    <div class="bg-[#070c1a] border border-white/10 w-full max-w-5xl max-h-[88vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-white/[0.02]">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center justify-center font-serif font-bold text-sm">
+            ॐ
+          </div>
+          <div>
+            <h2 id="modal-title" class="font-serif font-bold text-lg text-white">MahaDev Knowledge Dossier</h2>
+            <span class="text-[10px] font-mono text-slate-400 block">ARCHITECTURAL SPECIFICATION & SACRED METAPHYSICS</span>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all" aria-label="Close Modal">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Two Column Monograph Split: Left Navigation Rail, Right Content) -->
+      <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left Navigation Rail -->
+        <div class="w-full md:w-56 p-4 border-b md:border-b-0 md:border-r border-white/10 bg-black/40 flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible shrink-0 font-mono text-xs">
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-semibold transition-all" data-tab="philosophy">
+            Philosophy
+          </button>
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all" data-tab="phi">
+            Φ Harmonics
+          </button>
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all" data-tab="agents">
+            24 Agents
+          </button>
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all" data-tab="hardware">
+            Trishula HW
+          </button>
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all" data-tab="verification">
+            9-Tier Ladder
+          </button>
+          <button class="modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all" data-tab="terminal">
+            Console
+          </button>
+        </div>
+
+        <!-- Right Content Body -->
+        <div id="modal-body" class="flex-1 p-6 md:p-8 overflow-y-auto space-y-6 text-sm text-slate-300 font-sans">
+          <!-- Dynamically injected tab contents -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-8 py-3.5 border-t border-white/10 bg-black/60 flex items-center justify-between font-mono text-[11px] text-slate-400">
+        <span>Sovereign Founder Model · Zero Secret Policy</span>
+        <span class="text-amber-400/80">Lenovo IdeaPad 310-15IKB Hardware Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
