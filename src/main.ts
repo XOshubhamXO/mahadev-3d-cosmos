@@ -1,18 +1,35 @@
-import { CosmosScene } from './cosmos/CosmosScene';
+import { CosmosScene, SatelliteHoverInfo } from './cosmos/CosmosScene';
 import { AgentInspector3D } from './cosmos/AgentInspector3D';
-import { AGENTS_3D, Agent3D } from './data/agents';
+import { AGENTS_3D, Agent3D, VEDIC_LOKAS, CAPABILITIES_DICT } from './data/agents';
 import { audioEngine } from './audioEngine';
+
+interface StardustParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  decay: number;
+}
 
 class App {
   private scene: CosmosScene | null = null;
   private inspector3D: AgentInspector3D | null = null;
   private hoverCard: HTMLElement | null = null;
+  private satellitePopover: HTMLElement | null = null;
 
-  // Magnetic cursor state
+  // Magnetic cursor & stardust state
   private cursorDot: HTMLElement | null = null;
   private cursorRing: HTMLElement | null = null;
+  private cursorCrosshair: HTMLElement | null = null;
+  private stardustCanvas: HTMLCanvasElement | null = null;
+  private stardustCtx: CanvasRenderingContext2D | null = null;
+  private stardustParticles: StardustParticle[] = [];
   private mousePos = { x: -100, y: -100 };
   private ringPos = { x: -100, y: -100 };
+  private lastMousePos = { x: -100, y: -100 };
 
   constructor() {
     this.init();
@@ -23,14 +40,23 @@ class App {
     if (!container) return;
 
     this.hoverCard = document.getElementById('agent-hover-card');
+    this.satellitePopover = document.getElementById('satellite-hover-popover');
     this.cursorDot = document.getElementById('magnetic-cursor-dot');
     this.cursorRing = document.getElementById('magnetic-cursor-ring');
+    this.cursorCrosshair = document.getElementById('magnetic-cursor-crosshair');
+    this.stardustCanvas = document.getElementById('cursor-stardust-canvas') as HTMLCanvasElement;
 
-    // 1. Initialize Main 3D Cosmos Scene
+    if (this.stardustCanvas) {
+      this.stardustCtx = this.stardustCanvas.getContext('2d');
+      this.resizeStardustCanvas();
+      window.addEventListener('resize', () => this.resizeStardustCanvas());
+    }
+
+    // 1. Initialize Main 3D Cosmos Scene with Multi-Axial Navigation & Satellite Raycaster
     this.scene = new CosmosScene(
       container,
       (agent) => this.handleAgentSelected(agent),
-      (agent, mouseEvent) => this.handleAgentHovered(agent, mouseEvent)
+      (agent, mouseEvent, satelliteInfo) => this.handleAgentHovered(agent, mouseEvent, satelliteInfo)
     );
 
     // 2. Initialize Drawer 3D Inspector Viewport
@@ -39,68 +65,256 @@ class App {
       this.inspector3D = new AgentInspector3D(drawer3DContainer);
     }
 
-    this.setupMagneticCursor();
+    this.setupMagneticCursorAndStardust();
     this.setupUIControls();
     this.setupModalControls();
     this.setupAudioToggle();
     this.setupTelemetryTicker();
   }
 
-  private setupMagneticCursor() {
-    if (!this.cursorDot || !this.cursorRing) return;
+  private resizeStardustCanvas() {
+    if (!this.stardustCanvas) return;
+    this.stardustCanvas.width = window.innerWidth;
+    this.stardustCanvas.height = window.innerHeight;
+  }
+
+  private setupMagneticCursorAndStardust() {
+    const stardustColors = ['#e6ca85', '#fef08a', '#38bdf8', '#ffffff', '#818cf8', '#34d399'];
 
     window.addEventListener('mousemove', (e) => {
       this.mousePos.x = e.clientX;
       this.mousePos.y = e.clientY;
 
-      this.cursorDot!.style.opacity = '1';
-      this.cursorRing!.style.opacity = '1';
-      this.cursorDot!.style.left = `${e.clientX}px`;
-      this.cursorDot!.style.top = `${e.clientY}px`;
+      if (this.cursorDot) {
+        this.cursorDot.style.left = `${e.clientX}px`;
+        this.cursorDot.style.top = `${e.clientY}px`;
+      }
+      if (this.cursorCrosshair) {
+        this.cursorCrosshair.style.left = `${e.clientX}px`;
+        this.cursorCrosshair.style.top = `${e.clientY}px`;
+      }
+
+      // Calculate cursor velocity and spawn stardust particles
+      const dx = e.clientX - this.lastMousePos.x;
+      const dy = e.clientY - this.lastMousePos.y;
+      const speed = Math.sqrt(dx * dx + dy * dy);
+
+      if (speed > 1.5) {
+        const count = Math.min(6, Math.floor(speed * 0.4));
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const velocity = (Math.random() * 1.5 + 0.5) * (speed * 0.08);
+          this.stardustParticles.push({
+            x: e.clientX + (Math.random() - 0.5) * 8,
+            y: e.clientY + (Math.random() - 0.5) * 8,
+            vx: Math.cos(angle) * velocity + dx * 0.05,
+            vy: Math.sin(angle) * velocity + dy * 0.05,
+            size: Math.random() * 2.5 + 1.0,
+            color: stardustColors[Math.floor(Math.random() * stardustColors.length)],
+            alpha: 0.9,
+            decay: Math.random() * 0.025 + 0.015,
+          });
+        }
+      }
+
+      this.lastMousePos.x = e.clientX;
+      this.lastMousePos.y = e.clientY;
     });
 
-    const renderCursor = () => {
-      // Smooth lerp for outer ring
-      this.ringPos.x += (this.mousePos.x - this.ringPos.x) * 0.18;
-      this.ringPos.y += (this.mousePos.y - this.ringPos.y) * 0.18;
+    // Click Ripple Shockwave Effect
+    window.addEventListener('click', (e) => {
+      for (let i = 0; i < 28; i++) {
+        const angle = (i / 28) * Math.PI * 2;
+        const speed = Math.random() * 4.0 + 2.0;
+        this.stardustParticles.push({
+          x: e.clientX,
+          y: e.clientY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: Math.random() * 3.0 + 1.5,
+          color: '#e6ca85',
+          alpha: 1.0,
+          decay: 0.03,
+        });
+      }
+    });
+
+    // Interactive UI Elements Hover Feedback (Buttons, Inputs, Cards)
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        if (this.cursorRing) {
+          this.cursorRing.style.width = '24px';
+          this.cursorRing.style.height = '24px';
+          this.cursorRing.style.borderColor = '#38bdf8';
+        }
+      } else if (target.tagName === 'BUTTON' || target.closest('button') || target.classList.contains('agent-card')) {
+        if (this.cursorRing) {
+          this.cursorRing.style.width = '44px';
+          this.cursorRing.style.height = '44px';
+          this.cursorRing.style.borderColor = '#e6ca85';
+        }
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.closest('button') || target.classList.contains('agent-card')) {
+        if (this.cursorRing) {
+          this.cursorRing.style.width = '32px';
+          this.cursorRing.style.height = '32px';
+          this.cursorRing.style.borderColor = 'rgba(230, 202, 133, 0.4)';
+        }
+      }
+    });
+
+    // Render Animation Loop for Cursor & Stardust
+    const renderCursorAndStardust = () => {
+      // Smooth lerp for outer magnetic ring
+      this.ringPos.x += (this.mousePos.x - this.ringPos.x) * 0.22;
+      this.ringPos.y += (this.mousePos.y - this.ringPos.y) * 0.22;
 
       if (this.cursorRing) {
         this.cursorRing.style.left = `${this.ringPos.x}px`;
         this.cursorRing.style.top = `${this.ringPos.y}px`;
       }
-      requestAnimationFrame(renderCursor);
+
+      // Render Stardust Canvas
+      if (this.stardustCtx && this.stardustCanvas) {
+        this.stardustCtx.clearRect(0, 0, this.stardustCanvas.width, this.stardustCanvas.height);
+
+        for (let i = this.stardustParticles.length - 1; i >= 0; i--) {
+          const p = this.stardustParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            this.stardustParticles.splice(i, 1);
+            continue;
+          }
+
+          this.stardustCtx.save();
+          this.stardustCtx.globalAlpha = p.alpha;
+          this.stardustCtx.fillStyle = p.color;
+          this.stardustCtx.shadowColor = p.color;
+          this.stardustCtx.shadowBlur = 6;
+          this.stardustCtx.beginPath();
+          this.stardustCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          this.stardustCtx.fill();
+          this.stardustCtx.restore();
+        }
+      }
+
+      requestAnimationFrame(renderCursorAndStardust);
     };
-    renderCursor();
+
+    renderCursorAndStardust();
   }
 
-  private handleAgentHovered(agent: Agent3D | null, mouseEvent?: MouseEvent) {
+  private handleAgentHovered(
+    agent: Agent3D | null,
+    mouseEvent?: MouseEvent,
+    satelliteInfo?: SatelliteHoverInfo
+  ) {
+    if (!mouseEvent) return;
+
+    // 1. If Hovering over an Orbiting Satellite (Skill or Plugin)
+    if (satelliteInfo) {
+      if (this.hoverCard) this.hoverCard.classList.add('opacity-0', 'pointer-events-none');
+      if (!this.satellitePopover) return;
+
+      const meta = CAPABILITIES_DICT[satelliteInfo.name] || {
+        name: satelliteInfo.name,
+        category: satelliteInfo.type,
+        title: satelliteInfo.name.toUpperCase(),
+        description: `Active autonomous capability configured for ${satelliteInfo.agent.name}.`,
+      };
+
+      const badgeEl = document.getElementById('sat-popover-badge');
+      if (badgeEl) {
+        if (satelliteInfo.type === 'skill') {
+          badgeEl.className = 'px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-semibold flex items-center gap-1.5 glass-pill-gold';
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#e6ca85] animate-pulse"></span><span>🔱 Orbiting Skill</span>`;
+        } else {
+          badgeEl.className = 'px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-semibold flex items-center gap-1.5 glass-pill-cyan';
+          badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span><span>⚡ Orbiting Tool/Plugin</span>`;
+        }
+      }
+
+      const ownerEl = document.getElementById('sat-popover-owner');
+      if (ownerEl) {
+        ownerEl.textContent = `${satelliteInfo.agent.name} · ${satelliteInfo.agent.lokaSanskrit}`;
+      }
+
+      const titleEl = document.getElementById('sat-popover-title');
+      if (titleEl) titleEl.textContent = meta.title;
+
+      const nameEl = document.getElementById('sat-popover-name');
+      if (nameEl) {
+        nameEl.textContent = `@${meta.name}`;
+        nameEl.style.color = satelliteInfo.type === 'skill' ? '#fef08a' : '#38bdf8';
+      }
+
+      const descEl = document.getElementById('sat-popover-desc');
+      if (descEl) descEl.textContent = meta.description;
+
+      const x = Math.min(window.innerWidth - 380, Math.max(16, mouseEvent.clientX + 16));
+      const y = Math.min(window.innerHeight - 200, Math.max(16, mouseEvent.clientY - 40));
+
+      this.satellitePopover.style.left = `${x}px`;
+      this.satellitePopover.style.top = `${y}px`;
+      this.satellitePopover.style.borderColor = satelliteInfo.type === 'skill' ? 'rgba(230,202,133,0.5)' : 'rgba(56,189,248,0.5)';
+      this.satellitePopover.classList.remove('opacity-0', 'pointer-events-none');
+
+      if (this.cursorRing) {
+        this.cursorRing.style.width = '42px';
+        this.cursorRing.style.height = '42px';
+        this.cursorRing.style.borderColor = satelliteInfo.type === 'skill' ? '#e6ca85' : '#38bdf8';
+      }
+      return;
+    }
+
+    // Hide satellite popover when not hovering a satellite
+    if (this.satellitePopover) {
+      this.satellitePopover.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    // 2. If Hovering over an Agent Node
     if (!this.hoverCard) return;
 
-    if (!agent || !mouseEvent) {
+    if (!agent) {
       this.hoverCard.classList.add('opacity-0', 'pointer-events-none');
       if (this.cursorRing) {
-        this.cursorRing.style.width = '28px';
-        this.cursorRing.style.height = '28px';
-        this.cursorRing.style.borderColor = 'rgba(250, 204, 21, 0.4)';
+        this.cursorRing.style.width = '32px';
+        this.cursorRing.style.height = '32px';
+        this.cursorRing.style.borderColor = 'rgba(230, 202, 133, 0.4)';
       }
       return;
     }
 
     // Expand cursor ring on hover
     if (this.cursorRing) {
-      this.cursorRing.style.width = '46px';
-      this.cursorRing.style.height = '46px';
+      this.cursorRing.style.width = '48px';
+      this.cursorRing.style.height = '48px';
       this.cursorRing.style.borderColor = `${agent.color}`;
     }
 
     // Populate Hover Data
-    const deptElem = document.getElementById('hover-dept');
+    const lokaElem = document.getElementById('hover-loka');
     const nameElem = document.getElementById('hover-name');
     const tierElem = document.getElementById('hover-tier');
     const archElem = document.getElementById('hover-archetype');
     const mandateElem = document.getElementById('hover-mandate');
 
-    if (deptElem) deptElem.textContent = agent.department;
+    if (lokaElem) {
+      lokaElem.textContent = `${agent.lokaSanskrit} · ${agent.lokaName}`;
+      lokaElem.style.color = agent.color;
+    }
     if (nameElem) {
       nameElem.textContent = agent.name;
       nameElem.style.color = agent.color;
@@ -112,9 +326,15 @@ class App {
     if (archElem) archElem.textContent = `${agent.archetype} (${agent.archetypeSanskrit})`;
     if (mandateElem) mandateElem.textContent = agent.mandate;
 
+    const hoverSkillsEl = document.getElementById('hover-skills-count');
+    if (hoverSkillsEl) hoverSkillsEl.textContent = `${agent.skills.length} Orbiting Skills`;
+
+    const hoverPluginsEl = document.getElementById('hover-plugins-count');
+    if (hoverPluginsEl) hoverPluginsEl.textContent = `${agent.plugins.length} Plugins`;
+
     // Position floating card safely within viewport
-    const x = Math.min(window.innerWidth - 320, Math.max(16, mouseEvent.clientX + 16));
-    const y = Math.min(window.innerHeight - 200, Math.max(16, mouseEvent.clientY - 50));
+    const x = Math.min(window.innerWidth - 340, Math.max(16, mouseEvent.clientX + 16));
+    const y = Math.min(window.innerHeight - 220, Math.max(16, mouseEvent.clientY - 50));
 
     this.hoverCard.style.left = `${x}px`;
     this.hoverCard.style.top = `${y}px`;
@@ -128,25 +348,73 @@ class App {
 
     audioEngine.playChime(720, 0.25);
 
+    // Smoothly fly-to / focus the 3D camera onto this agent node
+    if (this.scene) {
+      this.scene.focusOnAgent(agent);
+    }
+
     // Hide hover card when selecting
     if (this.hoverCard) this.hoverCard.classList.add('opacity-0');
+    if (this.satellitePopover) this.satellitePopover.classList.add('opacity-0');
 
     // Populate detailed dossier
+    const lokaEl = document.getElementById('drawer-loka');
+    if (lokaEl) {
+      lokaEl.textContent = `${agent.lokaSanskrit} · ${agent.lokaName}`;
+      lokaEl.style.borderColor = `${agent.color}66`;
+      lokaEl.style.color = agent.color;
+    }
+
+    const tierEl = document.getElementById('drawer-tier');
+    if (tierEl) tierEl.textContent = `${agent.importanceTier} · R: ${agent.orbitRadius}u · Φ#${agent.phiHarmonicIndex}`;
+
     document.getElementById('drawer-name')!.textContent = agent.name;
     document.getElementById('drawer-role')!.textContent = agent.role;
-    document.getElementById('drawer-dept')!.textContent = agent.department;
-    document.getElementById('drawer-tier')!.textContent = `${agent.importanceTier} · R: ${agent.orbitRadius} · Φ#${agent.phiHarmonicIndex}`;
     document.getElementById('drawer-archetype')!.textContent = `${agent.archetype} · ${agent.archetypeSanskrit}`;
     document.getElementById('drawer-desc')!.textContent = agent.longDescription;
     document.getElementById('drawer-hardware')!.textContent = agent.hardwareTarget;
     document.getElementById('drawer-verification')!.textContent = agent.verificationScope;
     document.getElementById('drawer-workflow')!.textContent = agent.sampleWorkflow;
 
+    // Render Orbiting Skills Satellites in Drawer
+    const skillsNumEl = document.getElementById('drawer-skills-num');
+    if (skillsNumEl) skillsNumEl.textContent = `${agent.skills.length}`;
+
+    const skillsContainer = document.getElementById('drawer-skills-list');
+    if (skillsContainer) {
+      skillsContainer.innerHTML = agent.skills
+        .map(
+          (skill) =>
+            `<div class="px-2.5 py-1.5 rounded-xl glass-pill-gold text-[10.5px] font-mono flex items-center gap-1.5 transition-all hover:scale-[1.03] cursor-default">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#e6ca85] shadow-[0_0_6px_#e6ca85] animate-pulse"></span>
+              <span class="font-medium text-[#e6ca85]">${skill}</span>
+            </div>`
+        )
+        .join('');
+    }
+
+    // Render Orbiting Plugins Satellites in Drawer
+    const pluginsNumEl = document.getElementById('drawer-plugins-num');
+    if (pluginsNumEl) pluginsNumEl.textContent = `${agent.plugins.length}`;
+
+    const pluginsContainer = document.getElementById('drawer-plugins-list');
+    if (pluginsContainer) {
+      pluginsContainer.innerHTML = agent.plugins
+        .map(
+          (plugin) =>
+            `<div class="px-2.5 py-1.5 rounded-xl glass-pill-cyan text-[10.5px] font-mono flex items-center gap-1.5 transition-all hover:scale-[1.03] cursor-default">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8] animate-pulse"></span>
+              <span class="font-medium text-cyan-300">${plugin}</span>
+            </div>`
+        )
+        .join('');
+    }
+
     const toolsContainer = document.getElementById('drawer-tools')!;
     toolsContainer.innerHTML = agent.tools
       .map(
         (t) =>
-          `<span class="px-2.5 py-1 bg-white/[0.04] text-cyan-300 rounded-md font-mono text-[10px] border border-white/10">${t}</span>`
+          `<span class="px-2.5 py-1 bg-white/[0.04] text-slate-300 rounded-lg font-mono text-[10px] border border-white/10">${t}</span>`
       )
       .join('');
 
@@ -179,12 +447,42 @@ class App {
             }
           });
           btn.className =
-            'px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/50 font-semibold shadow-md shadow-amber-950/40 transition-all';
+            'px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/50 font-semibold shadow-md shadow-amber-950/40 transition-all';
 
           if (this.scene) {
             this.scene.setMode(mode);
           }
           this.updateModeHUD(mode);
+        });
+      }
+    });
+
+    // Scale Presets (Corner Navigator)
+    const scaleBtns = [
+      { id: 'btn-scale-atomic', preset: 'atomic' as const },
+      { id: 'btn-scale-kailash', preset: 'kailash' as const },
+      { id: 'btn-scale-system', preset: 'system' as const },
+      { id: 'btn-scale-universal', preset: 'universal' as const },
+    ];
+
+    scaleBtns.forEach(({ id, preset }) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          audioEngine.playChime(720, 0.15);
+          scaleBtns.forEach((s) => {
+            const b = document.getElementById(s.id);
+            if (b) {
+              b.className =
+                'px-1.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 transition-all text-center';
+            }
+          });
+          btn.className =
+            'px-1.5 py-1 rounded-md bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/40 font-semibold transition-all text-center';
+
+          if (this.scene) {
+            this.scene.setCameraPreset(preset);
+          }
         });
       }
     });
@@ -199,7 +497,7 @@ class App {
         if (this.scene) this.scene.setAutoRotate(rotating);
         rotateBtn.textContent = rotating ? 'Orbit: Active' : 'Orbit: Paused';
         rotateBtn.className = rotating
-          ? 'text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300'
+          ? 'text-[9px] font-mono px-2 py-0.5 rounded bg-[#e6ca85]/15 border border-[#e6ca85]/30 text-[#e6ca85]'
           : 'text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400';
       });
     }
@@ -215,13 +513,13 @@ class App {
           phiVisible = this.scene.toggleGoldenSpiral();
           if (phiLabel) phiLabel.textContent = phiVisible ? 'Φ Spiral: On' : 'Φ Spiral: Off';
           phiBtn.className = phiVisible
-            ? 'px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 transition-all flex items-center gap-1.5'
+            ? 'px-3 py-1.5 rounded-lg bg-[#e6ca85]/15 border border-[#e6ca85]/40 text-[#e6ca85] hover:bg-[#e6ca85]/25 transition-all flex items-center gap-1.5'
             : 'px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all flex items-center gap-1.5';
         }
       });
     }
 
-    // Modal Close Drawer
+    // Drawer Close Button
     const closeBtn = document.getElementById('btn-close-drawer');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
@@ -250,12 +548,11 @@ class App {
     // Nav Buttons
     const navMapping: Record<string, string> = {
       'nav-philosophy': 'philosophy',
+      'nav-lokas': 'lokas',
       'nav-phi': 'phi',
-      'nav-agents': 'agents',
       'nav-hardware': 'hardware',
       'nav-verification': 'verification',
       'nav-terminal': 'terminal',
-      'mob-modal-btn': 'philosophy',
     };
 
     Object.entries(navMapping).forEach(([id, tab]) => {
@@ -281,7 +578,7 @@ class App {
               'modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent transition-all';
           });
           btn.className =
-            'modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-semibold transition-all';
+            'modal-tab-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-[#e6ca85]/15 text-[#e6ca85] border border-[#e6ca85]/40 font-semibold transition-all';
           this.renderModalContent(tab);
         }
       });
@@ -293,25 +590,96 @@ class App {
     const title = document.getElementById('modal-title');
     if (!body || !title) return;
 
-    if (tab === 'phi') {
+    if (tab === 'lokas') {
+      title.textContent = 'The 6 Authentic Vedic Lokas & 24 Specialist Agents';
+      body.innerHTML = `
+        <div class="space-y-6">
+          <p class="text-xs text-slate-400 font-sans leading-relaxed">
+            The MahaDev OS v3.2.0 cosmos integrates authentic Vedic cosmology across 6 multi-dimensional, non-overlapping cosmic spheres. Each sphere commands a discrete orbital radius ($R = 16$ to $95\\text{u}$) and vertical elevation tier ($Y = -8.5$ to $+9.0\\text{u}$), reflecting their divine archetypes and organizational roles.
+          </p>
+
+          <div class="space-y-6 max-h-[55vh] overflow-y-auto pr-2">
+            ${VEDIC_LOKAS.map((loka) => {
+              const lokaAgents = AGENTS_3D.filter((a) => a.lokaId === loka.id);
+              return `
+                <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${loka.color}"></span>
+                        <h3 class="font-serif font-bold text-white text-base">${loka.name}</h3>
+                        <span class="text-xs font-cormorant italic text-[#e6ca85]">(${loka.sanskrit})</span>
+                        <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">${loka.category}</span>
+                      </div>
+                      <p class="text-xs text-slate-400 mt-1 font-sans">${loka.description}</p>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono text-[10px]">
+                      <span class="px-2.5 py-1 rounded bg-white/5 text-slate-300 border border-white/10">Radius: ${loka.radius}u</span>
+                      <span class="px-2.5 py-1 rounded bg-white/5 text-[#e6ca85] border border-[#e6ca85]/30">Height: ${loka.height >= 0 ? '+' : ''}${loka.height}u</span>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    ${lokaAgents
+                      .map(
+                        (a) => `
+                      <div class="p-3.5 rounded-xl bg-black/40 border border-white/5 hover:border-[#e6ca85]/40 transition-all cursor-pointer agent-card flex flex-col justify-between space-y-2" data-id="${a.id}">
+                        <div>
+                          <div class="flex items-center justify-between">
+                            <span class="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-white/5 text-cyan-300">${a.importanceTier}</span>
+                            <span class="text-[9px] font-mono text-[#e6ca85]">Φ#${a.phiHarmonicIndex}</span>
+                          </div>
+                          <h4 class="font-bold text-white text-sm mt-1.5 font-sans" style="color: ${a.color}">${a.name}</h4>
+                          <p class="text-xs font-cormorant italic text-[#e6ca85]">${a.archetype} · ${a.archetypeSanskrit}</p>
+                          <p class="text-[11px] text-slate-400 line-clamp-2 mt-1 font-sans leading-relaxed">${a.mandate}</p>
+                        </div>
+                        <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                          <span>Target: ${a.hardwareTarget}</span>
+                          <span class="text-[#e6ca85]">Inspect 3D →</span>
+                        </div>
+                      </div>
+                    `
+                      )
+                      .join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        document.querySelectorAll('.agent-card').forEach((card) => {
+          card.addEventListener('click', () => {
+            const id = card.getAttribute('data-id');
+            const agent = AGENTS_3D.find((ag) => ag.id === id);
+            if (agent) {
+              document.getElementById('info-modal')!.classList.add('hidden');
+              this.handleAgentSelected(agent);
+            }
+          });
+        });
+      }, 50);
+    } else if (tab === 'phi') {
       title.textContent = 'Φ Golden Ratio & Fibonacci Sacred Harmonics';
       body.innerHTML = `
         <div class="space-y-6">
-          <div class="p-6 rounded-2xl bg-white/[0.02] border border-amber-500/30">
+          <div class="p-6 rounded-2xl bg-white/[0.02] border border-[#e6ca85]/30">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-serif text-lg font-bold text-amber-300">Φ = 1.61803398875 · The Architectural Harmonic Law</h3>
-              <span class="px-2.5 py-1 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 font-mono text-[10px]">Golden Proportions Active</span>
+              <h3 class="font-serif text-lg font-bold text-[#e6ca85]">Φ = 1.61803398875 · The Architectural Harmonic Law</h3>
+              <span class="px-2.5 py-1 rounded bg-[#e6ca85]/15 border border-[#e6ca85]/40 text-[#e6ca85] font-mono text-[10px]">Golden Proportions Active</span>
             </div>
             <p class="text-slate-300 leading-relaxed text-sm font-sans">
-              In MahaDev OS v3.2.0, the <strong class="text-amber-300">Golden Ratio ($\phi$)</strong> is the mathematical foundation governing orbital radii, angular distribution, typography scales, WebGL geometries, and sound frequencies.
+              In MahaDev OS v3.2.0, the <strong class="text-[#e6ca85]">Golden Ratio ($\phi$)</strong> is the mathematical foundation governing non-overlapping multi-dimensional orbital radii, angular distribution, typography scales, centrosymmetric polyhedra, and sound frequencies.
             </p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-amber-400 font-mono text-xs uppercase tracking-wider font-bold">1. 4 Sacred Concentric Golden Spheres</span>
+              <span class="text-[#e6ca85] font-mono text-xs uppercase tracking-wider font-bold">1. 6 Authentic Vedic Spheres</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                24 agents are organized across 4 concentric golden spheres with radii <strong class="text-white">R₁ = 16.0, R₂ = 25.89 (16ϕ), R₃ = 41.89 (16ϕ²), R₄ = 67.78 (16ϕ³)</strong>, maintaining perfect bilateral and radial axial symmetry.
+                24 agents are organized across 6 concentric discrete golden spheres with non-overlapping radii <strong class="text-white">R = 16.0, 28.0, 42.0, 58.0, 76.0, 95.0</strong> and stepped $Y$-elevation heights, guaranteeing zero orbital collisions.
               </p>
             </div>
 
@@ -323,30 +691,30 @@ class App {
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-emerald-400 font-mono text-xs uppercase tracking-wider font-bold">3. Symmetrical Keplerian Speeds</span>
+              <span class="text-emerald-400 font-mono text-xs uppercase tracking-wider font-bold">3. Harmonic Keplerian Velocities</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                Orbital velocity decays harmonically with distance: $\\omega_k = \\omega_0 / \\phi^k$, alternating rotation directions across concentric tiers for celestial equilibrium.
+                Orbital angular speeds are graduated by realm distance ($\omega \propto 1 / \sqrt{R}$), with alternating orbital senses across tiers for celestial stability.
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <span class="text-purple-400 font-mono text-xs uppercase tracking-wider font-bold">4. Golden Torus & Damru Vortex</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                The central Spanda Torus is shaped with major radius $R = 8\\phi = 12.944$ and tube $r = 8/\\phi = 4.944$. The Damru particle vortex distributes 890 particles along the Fermat Golden Spiral.
+                The central Spanda Torus is shaped with major radius $R = \phi^3 \approx 4.236$ (strictly bounded $\le 7.5$), avoiding any overlap with the innermost Kailash orbit ($R = 16.0$).
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <span class="text-rose-400 font-mono text-xs uppercase tracking-wider font-bold">5. Fibonacci UI Modular Scale</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                Spacing and card aspect ratios follow Fibonacci numbers ($2, 3, 5, 8, 13, 21, 34, 55, 89, 377\\text{px}$) for natural visual elegance and cognitive comfort.
+                Spacing, card typography, and modal layouts follow Fibonacci progressions ($2, 3, 5, 8, 13, 21, 34, 55, 89\text{px}$) for natural visual elegance and cognitive comfort.
               </p>
             </div>
 
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-sky-400 font-mono text-xs uppercase tracking-wider font-bold">6. 432 Hz Shiva Solfeggio Sound</span>
+              <span class="text-sky-400 font-mono text-xs uppercase tracking-wider font-bold">6. 432 Hz Shiva Solfeggio Resonance</span>
               <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                The integrated Web Audio engine synthesizes 432 Hz fundamental ($27 \\times 16$) and 216 Hz sub-octave drone, vibrating in exact mathematical resonance with the golden cosmic matrix.
+                The integrated Web Audio engine synthesizes 432 Hz fundamental ($27 \times 16$) and 216 Hz sub-octave drone, vibrating in exact mathematical resonance with the golden cosmic matrix.
               </p>
             </div>
           </div>
@@ -357,9 +725,9 @@ class App {
       body.innerHTML = `
         <div class="space-y-6">
           <div class="p-6 rounded-2xl bg-white/[0.02] border border-white/10">
-            <h3 class="font-serif text-lg font-bold text-amber-300 mb-2">ॐ Paramashiva: The Source, Flow & Void</h3>
+            <h3 class="font-serif text-lg font-bold text-[#e6ca85] mb-2">ॐ Paramashiva: The Source, Flow & Void</h3>
             <p class="text-slate-300 leading-relaxed text-sm font-sans">
-              In Kashmir Shaivism and Advaita Vedanta, <strong class="text-white">MahaDev (Lord Shiva)</strong> is the non-dual reality. <strong class="text-amber-300">Shiva</strong> translates to <em>"That which is not"</em> — the unmanifest zero-point void (<span class="text-amber-400 font-serif">Shunya</span>) from which all intelligence originates.
+              In Kashmir Shaivism and Advaita Vedanta, <strong class="text-white">MahaDev (Lord Shiva)</strong> is the non-dual reality. <strong class="text-[#e6ca85]">Shiva</strong> translates to <em>"That which is not"</em> — the unmanifest zero-point void (<span class="text-[#e6ca85] font-serif">Shunya</span>) from which all intelligence originates.
             </p>
           </div>
 
@@ -391,50 +759,6 @@ class App {
           </div>
         </div>
       `;
-    } else if (tab === 'agents') {
-      title.textContent = 'The 24 Specialist Agent Pantheon';
-      body.innerHTML = `
-        <div class="space-y-4">
-          <p class="text-xs text-slate-400 font-sans">
-            Autonomous, role-bounded specialist agents executing under sovereign Founder command along the Golden Spiral matrix. Click any agent card to inspect its full 3D artifact and capabilities.
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-2">
-            ${AGENTS_3D.map(
-              (a) => `
-              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-amber-500/40 transition-all cursor-pointer agent-card flex flex-col justify-between space-y-3" data-id="${a.id}">
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-cyan-300">${a.department}</span>
-                    <span class="text-[9px] font-mono text-amber-400 font-bold">Φ#${a.phiHarmonicIndex}</span>
-                  </div>
-                  <h4 class="font-bold text-white text-sm mt-2 font-sans" style="color: ${a.color}">${a.name}</h4>
-                  <p class="text-[11px] text-amber-300 font-cormorant italic">${a.archetype}</p>
-                  <p class="text-[11px] text-slate-400 font-sans line-clamp-2 mt-1 leading-relaxed">${a.mandate}</p>
-                </div>
-                <div class="text-[10px] text-slate-400 font-mono flex items-center justify-between border-t border-white/5 pt-2">
-                  <span>Radius: ${a.orbitRadius}</span>
-                  <span class="text-amber-400 font-medium">Inspect 3D →</span>
-                </div>
-              </div>
-            `
-            ).join('')}
-          </div>
-        </div>
-      `;
-
-      // Add click handlers for agent cards
-      setTimeout(() => {
-        document.querySelectorAll('.agent-card').forEach((card) => {
-          card.addEventListener('click', () => {
-            const id = card.getAttribute('data-id');
-            const agent = AGENTS_3D.find((ag) => ag.id === id);
-            if (agent) {
-              document.getElementById('info-modal')!.classList.add('hidden');
-              this.handleAgentSelected(agent);
-            }
-          });
-        });
-      }, 50);
     } else if (tab === 'hardware') {
       title.textContent = 'Trishula Hardware Matrix & Provenance';
       body.innerHTML = `
@@ -454,7 +778,7 @@ class App {
               <p class="text-slate-300 font-sans text-xs leading-relaxed">Primary display & media transcoding engine via Intel VAAPI (<code class="text-cyan-300 font-mono">BM-20260912-02</code>).</p>
             </div>
             <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-              <span class="text-amber-400 font-bold block uppercase text-[10px] tracking-wider">3. NVIDIA 920MX dGPU</span>
+              <span class="text-[#e6ca85] font-bold block uppercase text-[10px] tracking-wider">3. NVIDIA 920MX dGPU</span>
               <p class="text-slate-300 font-sans text-xs leading-relaxed">Reserved on-demand for 3D rendering and custom CUDA <code class="text-cyan-300 font-mono">sm_50</code> kernels (<code class="text-cyan-300 font-mono">BM-20260912-01</code>).</p>
             </div>
           </div>
@@ -483,7 +807,7 @@ class App {
                 (t) => `
               <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
                 <div>
-                  <span class="text-amber-300 font-bold">${t.tier}: ${t.name}</span>
+                  <span class="text-[#e6ca85] font-bold">${t.tier}: ${t.name}</span>
                   <p class="text-slate-400 font-sans text-xs mt-0.5">${t.desc}</p>
                 </div>
                 <span class="px-2.5 py-1 rounded bg-emerald-950/80 text-emerald-300 text-[10px] border border-emerald-800/60 font-semibold">VERIFIED</span>
@@ -499,14 +823,14 @@ class App {
       body.innerHTML = `
         <div class="space-y-4 font-mono text-xs">
           <div class="bg-black/80 p-5 rounded-2xl border border-white/10 h-64 overflow-y-auto space-y-2 text-slate-300" id="terminal-output">
-            <p class="text-amber-300">MahaDev OS v3.2.0 [Mission Anchor Active · Φ Harmonics Engaged]</p>
+            <p class="text-[#e6ca85]">MahaDev OS v3.2.0 [Mission Anchor Active · 6 Authentic Vedic Lokas Engaged]</p>
             <p class="text-slate-500">Type a command or click quick actions below...</p>
-            <p class="text-cyan-400">&gt; mahadev status --phi</p>
-            <p class="text-emerald-400">✔ Φ = 1.61803398875 | 24 Agents in Golden Angle Orbit | Spanda 432Hz Synchronized</p>
+            <p class="text-cyan-400">&gt; mahadev status --lokas</p>
+            <p class="text-emerald-400">✔ 6 Vedic Lokas (Kailash, Vaikuntha, Satyaloka, Devlok, Prithvilok, Yamaloka) Synchronized | Spanda 432Hz Active</p>
           </div>
           <div class="flex gap-2">
-            <input type="text" id="term-input" placeholder="Enter command (e.g. phi, agents, pancha-kritya, hardware, clear)..." class="flex-1 bg-white/[0.04] border border-white/10 px-4 py-2.5 rounded-xl text-white focus:outline-none focus:border-amber-500/60 font-mono text-xs">
-            <button id="term-send" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold font-mono text-xs transition-all">Execute</button>
+            <input type="text" id="term-input" placeholder="Enter command (e.g. lokas, atomic, universal, phi, agents, hardware, clear)..." class="flex-1 bg-white/[0.04] border border-white/10 px-4 py-2.5 rounded-xl text-white focus:outline-none focus:border-[#e6ca85]/60 font-mono text-xs">
+            <button id="term-send" class="px-5 py-2.5 bg-[#e6ca85] hover:bg-amber-400 text-black rounded-xl font-bold font-mono text-xs transition-all">Execute</button>
           </div>
         </div>
       `;
@@ -522,21 +846,29 @@ class App {
           if (!cmd) return;
 
           audioEngine.playChime(600, 0.1);
-          output.innerHTML += `<p class="text-amber-300">&gt; ${input.value}</p>`;
+          output.innerHTML += `<p class="text-[#e6ca85]">&gt; ${input.value}</p>`;
           input.value = '';
 
-          if (cmd === 'phi' || cmd === 'golden') {
-            output.innerHTML += `<p class="text-amber-300">Φ Constant: 1.61803398875 | Golden Angle: 137.507764° | Radii Range: F_7(13) to F_11(89) units.</p>`;
+          if (cmd === 'lokas' || cmd === 'spheres') {
+            output.innerHTML += `<p class="text-[#e6ca85]">6 Vedic Lokas: 1. Kailash (R=16), 2. Vaikuntha (R=28), 3. Satyaloka (R=42), 4. Devlok (R=58), 5. Prithvilok (R=76), 6. Yamaloka (R=95).</p>`;
+          } else if (cmd === 'atomic' || cmd === 'bindu') {
+            output.innerHTML += `<p class="text-cyan-300">Atomic Zoom: 0.25u Singularity Core · Subatomic Quarks · Planck Lattice.</p>`;
+            if (this.scene) this.scene.setCameraPreset('atomic');
+          } else if (cmd === 'universal' || cmd === 'macrocosm') {
+            output.innerHTML += `<p class="text-purple-300">Universal Macrocosm: 850u Orbit · 3,000 Cosmic Dust Filaments · Brahmanda Halo.</p>`;
+            if (this.scene) this.scene.setCameraPreset('universal');
+          } else if (cmd === 'phi' || cmd === 'golden') {
+            output.innerHTML += `<p class="text-[#e6ca85]">Φ Constant: 1.61803398875 | Non-overlapping Orbits: R=16 to R=95 units.</p>`;
           } else if (cmd === 'agents') {
-            output.innerHTML += `<p class="text-cyan-300">Active Agents: Maha-Dev, Maha-Council, Maha-Closer, Build, Test, Security, DevOps, Android, Content, etc. (24 total arranged via PHI logarithmic spiral).</p>`;
+            output.innerHTML += `<p class="text-cyan-300">Active Agents: 24 total across Kailash (5), Vaikuntha (3), Brahmaloka (3), Devlok (5), Prithvilok (6), Yamaloka (2).</p>`;
           } else if (cmd === 'pancha-kritya') {
             output.innerHTML += `<p class="text-cyan-300">Pancha Kritya Pipeline: Srishti (Creation) -> Sthiti (Preservation) -> Samhara (Dissolution) -> Tirobhava (Veiling) -> Anugraha (Grace).</p>`;
           } else if (cmd === 'hardware' || cmd === 'bench') {
             output.innerHTML += `<p class="text-cyan-300">Hardware Targets: CPU (-j2), Intel HD 620 VAAPI (BM-20260912-02), NVIDIA 920MX dGPU sm_50 (BM-20260912-01).</p>`;
           } else if (cmd === 'clear') {
-            output.innerHTML = `<p class="text-amber-300">MahaDev OS v3.2.0 [Mission Anchor Active]</p>`;
+            output.innerHTML = `<p class="text-[#e6ca85]">MahaDev OS v3.2.0 [Mission Anchor Active]</p>`;
           } else if (cmd === 'help') {
-            output.innerHTML += `<p class="text-slate-300">Available commands: phi, agents, pancha-kritya, hardware, clear, help</p>`;
+            output.innerHTML += `<p class="text-slate-300">Available commands: lokas, atomic, universal, phi, agents, pancha-kritya, hardware, clear, help</p>`;
           } else {
             output.innerHTML += `<p class="text-red-400">Command not recognized. Type 'help' for available commands.</p>`;
           }
@@ -564,12 +896,12 @@ class App {
         if (audioLabel) audioLabel.textContent = active ? '432Hz Active' : '432Hz Spanda';
         if (waveIcon) {
           waveIcon.innerHTML = active
-            ? `<span class="w-0.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span><span class="w-0.5 h-3 bg-amber-400 rounded-full animate-pulse"></span><span class="w-0.5 h-2 bg-amber-400 rounded-full animate-pulse"></span>`
+            ? `<span class="w-0.5 h-1.5 bg-[#e6ca85] rounded-full animate-pulse"></span><span class="w-0.5 h-3 bg-[#e6ca85] rounded-full animate-pulse"></span><span class="w-0.5 h-2 bg-[#e6ca85] rounded-full animate-pulse"></span>`
             : `<span class="w-0.5 h-1.5 bg-slate-400 rounded-full"></span><span class="w-0.5 h-3 bg-slate-400 rounded-full"></span><span class="w-0.5 h-2 bg-slate-400 rounded-full"></span>`;
         }
         audioBtn.className = active
-          ? 'px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 transition-all flex items-center gap-2 font-medium shadow-md shadow-amber-950/40'
-          : 'px-3 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-amber-500/40 text-slate-300 hover:text-white transition-all flex items-center gap-2';
+          ? 'px-3.5 py-1.5 rounded-lg bg-[#e6ca85]/15 border border-[#e6ca85]/40 text-[#e6ca85] transition-all flex items-center gap-2 font-medium shadow-md shadow-amber-950/40'
+          : 'px-3.5 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-[#e6ca85]/40 text-slate-300 hover:text-white transition-all flex items-center gap-2';
       });
     }
   }
@@ -610,11 +942,7 @@ class App {
   }
 
   private setupTelemetryTicker() {
-    setInterval(() => {
-      if (!this.scene) return;
-      const fpsElem = document.getElementById('telemetry-fps');
-      if (fpsElem) fpsElem.textContent = '60 FPS · Φ 1.618';
-    }, 1000);
+    // Continuous telemetry update
   }
 }
 

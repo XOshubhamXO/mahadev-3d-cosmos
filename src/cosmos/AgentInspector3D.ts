@@ -113,12 +113,12 @@ export class AgentInspector3D {
 
     // 3. Gyroscopic Coronal Rings
     for (let i = 0; i < agent.ringCount + 1; i++) {
-      const ringRadius = 2.4 + i * 0.5;
-      const ringGeo = new THREE.TorusGeometry(ringRadius, 0.04, 8, 48);
+      const ringRadius = 2.2 + i * 0.45;
+      const ringGeo = new THREE.TorusGeometry(ringRadius, 0.03, 8, 48);
       const ringMat = new THREE.MeshBasicMaterial({
         color: i % 2 === 0 ? primaryColor : accentColor,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.5,
       });
       const ringMesh = new THREE.Mesh(ringGeo, ringMat);
       ringMesh.rotation.x = (Math.PI / (i + 2)) * (i + 1);
@@ -127,18 +127,69 @@ export class AgentInspector3D {
       group.add(ringMesh);
     }
 
-    // 4. Orbiting Mini Particle Nodes (Satellites)
-    const satCount = agent.importanceTier === 'CRITICAL' ? 6 : 3;
-    const satGeo = new THREE.SphereGeometry(0.16, 8, 8);
-    const satMat = new THREE.MeshBasicMaterial({ color: accentColor });
+    // 4. Orbiting Skills Satellites (Golden Octahedrons)
+    const skillsGroup = new THREE.Group();
+    skillsGroup.name = 'skills_orbit_group';
+    skillsGroup.rotation.x = 0.45;
 
-    for (let s = 0; s < satCount; s++) {
+    const skillOrbitRadius = 3.2;
+    const skillPathGeo = new THREE.BufferGeometry().setFromPoints(
+      new THREE.Path().absarc(0, 0, skillOrbitRadius, 0, Math.PI * 2, true).getPoints(48)
+    );
+    const skillPath = new THREE.LineLoop(
+      skillPathGeo,
+      new THREE.LineBasicMaterial({ color: 0xe6ca85, transparent: true, opacity: 0.4 })
+    );
+    skillsGroup.add(skillPath);
+
+    const sCount = agent.skills.length;
+    agent.skills.forEach((_, idx) => {
+      const theta = (idx / sCount) * Math.PI * 2;
+      const satGeo = new THREE.OctahedronGeometry(0.22, 0);
+      const satMat = new THREE.MeshStandardMaterial({
+        color: 0xfef08a,
+        emissive: 0xe6ca85,
+        emissiveIntensity: 0.85,
+        roughness: 0.1,
+        metalness: 0.9,
+      });
       const satMesh = new THREE.Mesh(satGeo, satMat);
-      const theta = (s / satCount) * Math.PI * 2;
-      satMesh.position.set(Math.cos(theta) * 3.2, Math.sin(theta) * 1.5, Math.sin(theta) * 3.2);
-      satMesh.name = `sat_${s}`;
-      group.add(satMesh);
-    }
+      satMesh.position.set(Math.cos(theta) * skillOrbitRadius, Math.sin(theta) * skillOrbitRadius, 0);
+      skillsGroup.add(satMesh);
+    });
+    group.add(skillsGroup);
+
+    // 5. Orbiting Plugins Satellites (Celestial Cyan Tetrahedrons)
+    const pluginsGroup = new THREE.Group();
+    pluginsGroup.name = 'plugins_orbit_group';
+    pluginsGroup.rotation.x = -0.55;
+
+    const pluginOrbitRadius = 4.1;
+    const pluginPathGeo = new THREE.BufferGeometry().setFromPoints(
+      new THREE.Path().absarc(0, 0, pluginOrbitRadius, 0, Math.PI * 2, true).getPoints(48)
+    );
+    const pluginPath = new THREE.LineLoop(
+      pluginPathGeo,
+      new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 })
+    );
+    pluginsGroup.add(pluginPath);
+
+    const pCount = agent.plugins.length;
+    agent.plugins.forEach((_, idx) => {
+      const theta = (idx / pCount) * Math.PI * 2;
+      const satGeo = new THREE.TetrahedronGeometry(0.2, 0);
+      const satMat = new THREE.MeshStandardMaterial({
+        color: 0xbae6fd,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.85,
+        roughness: 0.1,
+        metalness: 0.9,
+      });
+      const satMesh = new THREE.Mesh(satGeo, satMat);
+      satMesh.position.set(Math.cos(theta) * pluginOrbitRadius, Math.sin(theta) * pluginOrbitRadius, 0);
+      pluginsGroup.add(satMesh);
+    });
+    group.add(pluginsGroup);
 
     this.currentMeshGroup = group;
     this.scene.add(group);
@@ -174,13 +225,27 @@ export class AgentInspector3D {
       this.currentMeshGroup.rotation.y += this.rotationSpeed.y;
       this.currentMeshGroup.rotation.x += this.rotationSpeed.x;
 
-      // Animate child rings counter-rotation
+      // Animate child rings counter-rotation & orbiting skill/plugin satellites
       this.currentMeshGroup.children.forEach((child) => {
         if (child.name.startsWith('ring_')) {
           child.rotation.z += delta * 0.8;
           child.rotation.x += delta * 0.4;
-        } else if (child.name.startsWith('sat_')) {
-          child.rotation.y += delta * 1.2;
+        } else if (child.name === 'skills_orbit_group') {
+          child.rotation.z += delta * 1.5;
+          child.children.forEach((sat) => {
+            if (sat instanceof THREE.Mesh) {
+              sat.rotation.x += delta * 2.0;
+              sat.rotation.y += delta * 2.2;
+            }
+          });
+        } else if (child.name === 'plugins_orbit_group') {
+          child.rotation.z -= delta * 1.2;
+          child.children.forEach((sat) => {
+            if (sat instanceof THREE.Mesh) {
+              sat.rotation.x -= delta * 1.8;
+              sat.rotation.z += delta * 2.4;
+            }
+          });
         }
       });
     }

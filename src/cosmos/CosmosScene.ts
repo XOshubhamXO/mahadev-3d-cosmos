@@ -1,9 +1,15 @@
 import * as THREE from 'three';
-import { SacredGeometryCore } from './SacredGeometryCore';
+import { SacredGeometryCore, createRoundParticleTexture } from './SacredGeometryCore';
 import { TrishulaBeams } from './TrishulaBeams';
 import { AgentConstellation } from './AgentConstellation';
 import { GoldenSpiralOverlay } from './GoldenSpiralOverlay';
-import { Agent3D } from '../data/agents';
+import { Agent3D, GOLDEN_ANGLE } from '../data/agents';
+
+export interface SatelliteHoverInfo {
+  name: string;
+  type: 'skill' | 'plugin';
+  agent: Agent3D;
+}
 
 export class CosmosScene {
   private container: HTMLElement;
@@ -14,22 +20,36 @@ export class CosmosScene {
   private trishula: TrishulaBeams;
   private constellation: AgentConstellation;
   private goldenSpiral: GoldenSpiralOverlay;
+  private universalStarfield: THREE.Points;
+  private macrocosmicFilaments: THREE.LineSegments;
   private raycaster: THREE.Raycaster;
   private mouse: THREE.Vector2;
   private clock: THREE.Clock;
   private onAgentSelected: (agent: Agent3D | null) => void;
-  private onAgentHovered: (agent: Agent3D | null, mouseEvent?: MouseEvent) => void;
+  private onAgentHovered: (
+    agent: Agent3D | null,
+    mouseEvent?: MouseEvent,
+    satelliteInfo?: SatelliteHoverInfo
+  ) => void;
   private isAutoRotating: boolean = true;
 
-  // Orbit control state
+  // True Multi-Axial 6-DOF Camera Navigation State
   private isDragging: boolean = false;
+  private dragMode: 'orbit' | 'pan' = 'orbit';
   private previousMousePosition = { x: 0, y: 0 };
+  private target: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
+  private desiredTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
   private spherical: THREE.Spherical;
+  private desiredSpherical: THREE.Spherical;
 
   constructor(
     container: HTMLElement,
     onAgentSelected: (agent: Agent3D | null) => void,
-    onAgentHovered: (agent: Agent3D | null, mouseEvent?: MouseEvent) => void
+    onAgentHovered: (
+      agent: Agent3D | null,
+      mouseEvent?: MouseEvent,
+      satelliteInfo?: SatelliteHoverInfo
+    ) => void
   ) {
     this.container = container;
     this.onAgentSelected = onAgentSelected;
@@ -40,40 +60,49 @@ export class CosmosScene {
 
     // 1. Scene
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x030712, 0.008);
+    this.scene.fog = new THREE.FogExp2(0x03050c, 0.0015);
 
-    // 2. Camera & Spherical Coordinates
+    // 2. Camera with Full Multi-Axial Dynamic Range (0.05 to 10,000)
     this.camera = new THREE.PerspectiveCamera(
       50,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+      0.05,
+      10000
     );
-    this.camera.position.set(0, 35, 75);
-    this.camera.lookAt(0, 0, 0);
+    this.camera.position.set(0, 45, 95);
+    this.camera.lookAt(this.target);
 
     this.spherical = new THREE.Spherical();
-    this.spherical.setFromVector3(this.camera.position);
+    this.spherical.setFromVector3(this.camera.position.clone().sub(this.target));
+    this.desiredSpherical = this.spherical.clone();
 
-    // 3. Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // 3. High-Performance Renderer
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+    });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.toneMappingExposure = 1.25;
     this.container.appendChild(this.renderer.domElement);
 
-    // 4. Lighting
-    const ambient = new THREE.AmbientLight(0x0a192f, 1.5);
+    // 4. Lighting Suite
+    const ambient = new THREE.AmbientLight(0x0c1322, 1.8);
     this.scene.add(ambient);
 
-    const centerPointLight = new THREE.PointLight(0x38bdf8, 3, 100);
+    const centerPointLight = new THREE.PointLight(0xe6ca85, 3.5, 180);
     centerPointLight.position.set(0, 0, 0);
     this.scene.add(centerPointLight);
 
     const amberLight = new THREE.DirectionalLight(0xf59e0b, 1.2);
-    amberLight.position.set(20, 40, 20);
+    amberLight.position.set(30, 60, 30);
     this.scene.add(amberLight);
+
+    const cyanLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
+    cyanLight.position.set(-30, -40, -30);
+    this.scene.add(cyanLight);
 
     // 5. Components
     this.core = new SacredGeometryCore();
@@ -88,15 +117,86 @@ export class CosmosScene {
     this.goldenSpiral = new GoldenSpiralOverlay();
     this.scene.add(this.goldenSpiral.group);
 
-    // 6. Event Listeners
+    // 6. Universal Macrocosm Elements
+    const starCount = 3000;
+    const starPositions = new Float32Array(starCount * 3);
+    const starColors = new Float32Array(starCount * 3);
+    const colorPalette = [
+      new THREE.Color(0xe6ca85), // Champagne Gold
+      new THREE.Color(0x38bdf8), // Celestial Cyan
+      new THREE.Color(0xf8fafc), // Diamond White
+      new THREE.Color(0x818cf8), // Astral Indigo
+      new THREE.Color(0x34d399), // Jade Emerald
+    ];
+
+    for (let i = 0; i < starCount; i++) {
+      const radius = 80 + Math.pow(Math.random(), 0.5) * 1600;
+      const theta = i * GOLDEN_ANGLE;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      starPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      starPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      starPositions[i * 3 + 2] = radius * Math.cos(phi);
+
+      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      starColors[i * 3] = color.r;
+      starColors[i * 3 + 1] = color.g;
+      starColors[i * 3 + 2] = color.b;
+    }
+
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+
+    const starMat = new THREE.PointsMaterial({
+      size: 3.2,
+      map: createRoundParticleTexture(64),
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.75,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    this.universalStarfield = new THREE.Points(starGeo, starMat);
+    this.scene.add(this.universalStarfield);
+
+    // Cosmic Web Filaments
+    const filamentPoints: THREE.Vector3[] = [];
+    for (let i = 0; i < 40; i++) {
+      const r1 = 150 + Math.random() * 800;
+      const r2 = 150 + Math.random() * 800;
+      const t1 = Math.random() * Math.PI * 2;
+      const t2 = Math.random() * Math.PI * 2;
+      const y1 = (Math.random() - 0.5) * 400;
+      const y2 = (Math.random() - 0.5) * 400;
+
+      filamentPoints.push(new THREE.Vector3(r1 * Math.cos(t1), y1, r1 * Math.sin(t1)));
+      filamentPoints.push(new THREE.Vector3(r2 * Math.cos(t2), y2, r2 * Math.sin(t2)));
+    }
+
+    const filamentGeo = new THREE.BufferGeometry().setFromPoints(filamentPoints);
+    const filamentMat = new THREE.LineBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.08,
+    });
+    this.macrocosmicFilaments = new THREE.LineSegments(filamentGeo, filamentMat);
+    this.scene.add(this.macrocosmicFilaments);
+
+    // 7. Event Listeners with Multi-Axial Pan & Focal Zoom Support
     window.addEventListener('resize', () => this.onResize());
     window.addEventListener('mousemove', (e) => this.onMouseMove(e));
     window.addEventListener('mousedown', (e) => this.onMouseDown(e));
     window.addEventListener('mouseup', () => this.onMouseUp());
     window.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
     window.addEventListener('click', (e) => this.onClick(e));
+    window.addEventListener('contextmenu', (e) => {
+      if ((e.target as HTMLElement).tagName === 'CANVAS') {
+        e.preventDefault(); // Prevent context menu to allow smooth right-click panning
+      }
+    });
 
-    // 7. Start Loop
+    // 8. Start Animation Loop
     this.animate();
   }
 
@@ -110,19 +210,64 @@ export class CosmosScene {
     if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
     this.isDragging = true;
     this.previousMousePosition = { x: e.clientX, y: e.clientY };
+
+    // Detect Pan mode (Right Click, Middle Click, or Shift+Left Click)
+    if (e.button === 2 || e.button === 1 || e.shiftKey) {
+      this.dragMode = 'pan';
+    } else {
+      this.dragMode = 'orbit';
+    }
   }
 
   private onMouseUp() {
     this.isDragging = false;
   }
 
+  // Multi-Axial Focal Zoom (dollies along 3D ray through cursor towards any off-center point!)
   private onWheel(e: WheelEvent) {
     if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
     e.preventDefault();
-    this.spherical.radius += e.deltaY * 0.05;
-    this.spherical.radius = Math.max(25, Math.min(130, this.spherical.radius));
-    this.camera.position.setFromSpherical(this.spherical);
-    this.camera.lookAt(0, 0, 0);
+
+    // Calculate mouse 3D ray for directional focal zooming
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const rayDir = this.raycaster.ray.direction.clone().normalize();
+
+    const zoomStep = e.deltaY > 0 ? 1.12 : 0.89;
+    const currentRadius = this.desiredSpherical.radius;
+    const newRadius = Math.max(0.25, Math.min(2200, currentRadius * zoomStep));
+    const radiusDelta = newRadius - currentRadius;
+
+    this.desiredSpherical.radius = newRadius;
+
+    // Shift target slightly along mouse ray on zoom-in to focus directly on whatever is under cursor
+    if (e.deltaY < 0 && newRadius > 0.5 && newRadius < 800) {
+      const shiftAmount = Math.abs(radiusDelta) * 0.15;
+      this.desiredTarget.add(rayDir.multiplyScalar(shiftAmount));
+    } else if (e.deltaY > 0 && newRadius > 150) {
+      // Pull back towards origin when zooming way out to macrocosm
+      this.desiredTarget.lerp(new THREE.Vector3(0, 0, 0), 0.12);
+    }
+
+    this.updateZoomTelemetry(newRadius);
+  }
+
+  private updateZoomTelemetry(radius: number) {
+    const zoomElem = document.getElementById('telemetry-scale');
+    if (!zoomElem) return;
+
+    if (radius < 1.5) {
+      zoomElem.textContent = 'ATOMIC · QUANTUM BINDU (10⁻³⁵ m)';
+      zoomElem.className = 'text-cyan-300 font-bold';
+    } else if (radius < 22) {
+      zoomElem.textContent = 'PARAMA DHAMA · KAILASH DHAMA';
+      zoomElem.className = 'text-[#e6ca85] font-bold';
+    } else if (radius < 110) {
+      zoomElem.textContent = 'VEDIC LOKAS · CELESTIAL SPHERES';
+      zoomElem.className = 'text-amber-300 font-bold';
+    } else {
+      zoomElem.textContent = 'UNIVERSAL · BRAHMANDA MACROCOSM';
+      zoomElem.className = 'text-purple-300 font-bold';
+    }
   }
 
   private onMouseMove(e: MouseEvent) {
@@ -133,43 +278,69 @@ export class CosmosScene {
       const deltaX = e.clientX - this.previousMousePosition.x;
       const deltaY = e.clientY - this.previousMousePosition.y;
 
-      this.spherical.theta -= deltaX * 0.005;
-      this.spherical.phi -= deltaY * 0.005;
-      this.spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, this.spherical.phi));
-
-      this.camera.position.setFromSpherical(this.spherical);
-      this.camera.lookAt(0, 0, 0);
+      if (this.dragMode === 'pan') {
+        // Multi-Axial 3D Pan in Camera Plane
+        const panSpeed = Math.max(0.001, this.desiredSpherical.radius * 0.0012);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+        
+        const panOffset = right.multiplyScalar(-deltaX * panSpeed).add(up.multiplyScalar(deltaY * panSpeed));
+        this.desiredTarget.add(panOffset);
+        this.target.add(panOffset);
+      } else {
+        // Multi-Axial Orbit Rotation (Azimuth and Polar Elevation)
+        this.desiredSpherical.theta -= deltaX * 0.005;
+        this.desiredSpherical.phi -= deltaY * 0.005;
+        this.desiredSpherical.phi = Math.max(0.04, Math.min(Math.PI - 0.04, this.desiredSpherical.phi));
+      }
 
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
     }
 
-    // Hover Raycasting
+    // Comprehensive Raycasting: Nodes, Badges, and Orbiting Satellites
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const targets = [
       ...this.constellation.agentMeshes,
       ...this.constellation.agentSprites,
+      ...this.constellation.satelliteMeshes,
     ];
     const intersects = this.raycaster.intersectObjects(targets);
 
     if (intersects.length > 0) {
       const selectedObj = intersects[0].object;
-      if (selectedObj.userData && selectedObj.userData.agent) {
-        document.body.style.cursor = 'pointer';
-        this.onAgentHovered(selectedObj.userData.agent, e);
-        return;
+      if (selectedObj.userData) {
+        if (selectedObj.userData.type === 'skill') {
+          this.onAgentHovered(selectedObj.userData.agent, e, {
+            name: selectedObj.userData.skill,
+            type: 'skill',
+            agent: selectedObj.userData.agent,
+          });
+          return;
+        } else if (selectedObj.userData.type === 'plugin') {
+          this.onAgentHovered(selectedObj.userData.agent, e, {
+            name: selectedObj.userData.plugin,
+            type: 'plugin',
+            agent: selectedObj.userData.agent,
+          });
+          return;
+        } else if (selectedObj.userData.agent) {
+          this.onAgentHovered(selectedObj.userData.agent, e, undefined);
+          return;
+        }
       }
     }
 
-    document.body.style.cursor = this.isDragging ? 'grabbing' : 'default';
-    this.onAgentHovered(null, e);
+    this.onAgentHovered(null, e, undefined);
   }
 
   private onClick(e: MouseEvent) {
     if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
+
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const targets = [
       ...this.constellation.agentMeshes,
       ...this.constellation.agentSprites,
+      ...this.constellation.satelliteMeshes,
     ];
     const intersects = this.raycaster.intersectObjects(targets);
 
@@ -177,8 +348,22 @@ export class CosmosScene {
       const selectedObj = intersects[0].object;
       if (selectedObj.userData && selectedObj.userData.agent) {
         this.onAgentSelected(selectedObj.userData.agent);
+        this.focusOnAgent(selectedObj.userData.agent);
       }
     }
+  }
+
+  // Smooth Multi-Axial Fly-To Focus on any Agent Node in 3D
+  public focusOnAgent(agent: Agent3D) {
+    const nodePosition = new THREE.Vector3(
+      Math.cos(agent.angularOffset) * agent.orbitRadius,
+      agent.orbitHeight,
+      Math.sin(agent.angularOffset) * agent.orbitRadius
+    );
+    this.desiredTarget.copy(nodePosition);
+    this.desiredSpherical.radius = Math.max(2.8, agent.nodeScale * 5.8);
+    this.desiredSpherical.phi = Math.PI / 2.3;
+    this.updateZoomTelemetry(this.desiredSpherical.radius);
   }
 
   public setMode(newMode: string) {
@@ -193,6 +378,29 @@ export class CosmosScene {
     return this.goldenSpiral.toggle();
   }
 
+  public setCameraPreset(preset: 'atomic' | 'kailash' | 'system' | 'universal') {
+    this.desiredTarget.set(0, 0, 0);
+    switch (preset) {
+      case 'atomic':
+        this.desiredSpherical.radius = 0.85;
+        this.desiredSpherical.phi = Math.PI / 2.2;
+        break;
+      case 'kailash':
+        this.desiredSpherical.radius = 22.0;
+        this.desiredSpherical.phi = Math.PI / 2.5;
+        break;
+      case 'system':
+        this.desiredSpherical.radius = 95.0;
+        this.desiredSpherical.phi = Math.PI / 3.0;
+        break;
+      case 'universal':
+        this.desiredSpherical.radius = 850.0;
+        this.desiredSpherical.phi = Math.PI / 3.5;
+        break;
+    }
+    this.updateZoomTelemetry(this.desiredSpherical.radius);
+  }
+
   private animate = () => {
     requestAnimationFrame(this.animate);
     const delta = this.clock.getDelta();
@@ -202,20 +410,25 @@ export class CosmosScene {
     this.constellation.update(delta);
     this.goldenSpiral.update(delta);
 
+    // Starfield subtle rotation
+    this.universalStarfield.rotation.y += delta * 0.002;
+    this.macrocosmicFilaments.rotation.y -= delta * 0.001;
+
+    // Smooth Multi-Axial Interpolation / Lerp
+    this.target.lerp(this.desiredTarget, 0.075);
+    this.spherical.radius += (this.desiredSpherical.radius - this.spherical.radius) * 0.085;
+    this.spherical.phi += (this.desiredSpherical.phi - this.spherical.phi) * 0.085;
+    this.spherical.theta += (this.desiredSpherical.theta - this.spherical.theta) * 0.085;
+
     if (this.isAutoRotating && !this.isDragging) {
-      this.spherical.theta += delta * 0.04;
-      this.camera.position.setFromSpherical(this.spherical);
-      this.camera.lookAt(0, 0, 0);
+      this.desiredSpherical.theta += delta * 0.035;
+      this.spherical.theta += delta * 0.035;
     }
+
+    const cameraOffset = new THREE.Vector3().setFromSpherical(this.spherical);
+    this.camera.position.copy(this.target).add(cameraOffset);
+    this.camera.lookAt(this.target);
 
     this.renderer.render(this.scene, this.camera);
   };
-
-  public getRendererInfo() {
-    return {
-      triangles: this.renderer.info.render.triangles,
-      calls: this.renderer.info.render.calls,
-      memory: this.renderer.info.memory.geometries,
-    };
-  }
 }
