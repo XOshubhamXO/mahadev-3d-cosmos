@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { SacredGeometryCore, createRoundParticleTexture } from './SacredGeometryCore';
 import { TrishulaBeams } from './TrishulaBeams';
-import { AgentConstellation } from './AgentConstellation';
 import { Agent3D, GOLDEN_ANGLE } from '../data/agents';
 
 export interface SatelliteHoverInfo {
@@ -18,7 +17,7 @@ export class CosmosScene {
   private core: SacredGeometryCore;
   private trishula: TrishulaBeams;
   private constellation: AgentConstellation;
-  private goldenSpiral: GoldenSpiralOverlay;
+   // Removed GoldenSpiralOverlay per specification
   private universalStarfield: THREE.Points;
   private raycaster: THREE.Raycaster;
   private mouse: THREE.Vector2;
