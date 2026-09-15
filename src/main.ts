@@ -583,8 +583,6 @@ private setupMagneticCursorAndStardust() {
 
     if (zenBtn) zenBtn.addEventListener('click', enterZen);
     if (exitBtn) exitBtn.addEventListener('click', (e) => { e.stopPropagation(); exitZen(); });
-    if (exitPill) exitPill.addEventListener('click', () => { if (document.body.classList.contains('zen-active')) exitZen(); });
-
     // Hotkey: Z toggles Zen mode (ignored while typing in inputs)
     window.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;

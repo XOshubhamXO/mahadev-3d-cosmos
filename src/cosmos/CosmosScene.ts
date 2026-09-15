@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { SacredGeometryCore, createRoundParticleTexture } from './SacredGeometryCore';
 import { TrishulaBeams } from './TrishulaBeams';
 import { AgentConstellation } from './AgentConstellation';
-import { GoldenSpiralOverlay } from './GoldenSpiralOverlay';
 import { Agent3D, GOLDEN_ANGLE } from '../data/agents';
 
 export interface SatelliteHoverInfo {
@@ -113,8 +112,10 @@ export class CosmosScene {
     this.constellation = new AgentConstellation();
     this.scene.add(this.constellation.group);
 
-    this.goldenSpiral = new GoldenSpiralOverlay();
-    this.scene.add(this.goldenSpiral.group);
+    // Removed GoldenSpiralOverlay per specification
+//     // Removed GoldenSpiralOverlay per specification
+    // this.goldenSpiral = new GoldenSpiralOverlay();
+    // this.scene.add(this.goldenSpiral.group);
 
     // 6. Universal Macrocosm Elements (High Star Density: 12,000 stars)
     const starCount = 12000;
