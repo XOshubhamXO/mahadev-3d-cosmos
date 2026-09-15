@@ -21,7 +21,7 @@
             kailash: {
               void: '#03050c',
               obsidian: '#070a14',
-              surface: 'rgba(7, 11, 22, 0.76)',
+              surface: 'rgba(7, 11, 22, 0.88)',
               gold: '#e6ca85',
               goldLight: '#fef08a',
               amber: '#f59e0b',
@@ -47,9 +47,9 @@
   <style>
     :root {
       --phi: 1.61803398875;
-      --glass-bg: rgba(8, 14, 28, 0.72);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+      --glass-bg: rgba(7, 11, 24, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.16);
+      --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.24);
       --glass-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.85);
     }
 
@@ -67,64 +67,50 @@
       background: rgba(3, 5, 12, 0.6);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(230, 202, 133, 0.28);
+      background: rgba(230, 202, 133, 0.35);
       border-radius: 6px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(230, 202, 133, 0.65);
+      background: rgba(230, 202, 133, 0.75);
     }
 
     /* Cohesive Global Glassmorphism Design System */
     .luxury-panel {
-      background: linear-gradient(135deg, rgba(14, 20, 38, 0.78) 0%, rgba(6, 10, 22, 0.84) 100%);
-      backdrop-filter: blur(32px) saturate(200%);
-      -webkit-backdrop-filter: blur(32px) saturate(200%);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-top: 1px solid rgba(255, 255, 255, 0.26);
-      box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+      background: linear-gradient(135deg, rgba(11, 17, 34, 0.92) 0%, rgba(5, 9, 20, 0.96) 100%);
+      backdrop-filter: blur(36px) saturate(200%);
+      -webkit-backdrop-filter: blur(36px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.85), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .glass-card {
-      background: linear-gradient(135deg, rgba(12, 18, 36, 0.72) 0%, rgba(5, 9, 20, 0.82) 100%);
-      backdrop-filter: blur(30px) saturate(195%);
-      -webkit-backdrop-filter: blur(30px) saturate(195%);
-      border: 1px solid rgba(255, 255, 255, 0.11);
-      border-top: 1px solid rgba(255, 255, 255, 0.24);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 1px 0 rgba(255, 255, 255, 0.16);
-    }
-
-    .glass-btn {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-top: 1px solid rgba(255, 255, 255, 0.20);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .glass-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.22);
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, rgba(10, 16, 32, 0.92) 0%, rgba(4, 8, 18, 0.96) 100%);
+      backdrop-filter: blur(32px) saturate(195%);
+      -webkit-backdrop-filter: blur(32px) saturate(195%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 1px solid rgba(255, 255, 255, 0.26);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
     }
 
     .glass-pill-gold {
-      background: linear-gradient(135deg, rgba(230, 202, 133, 0.14) 0%, rgba(202, 138, 4, 0.06) 100%);
+      background: linear-gradient(135deg, rgba(230, 202, 133, 0.18) 0%, rgba(202, 138, 4, 0.08) 100%);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(230, 202, 133, 0.38);
-      border-top: 1px solid rgba(254, 240, 138, 0.6);
+      border: 1px solid rgba(230, 202, 133, 0.45);
+      border-top: 1px solid rgba(254, 240, 138, 0.7);
       color: #fef08a;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 16px rgba(230, 202, 133, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 16px rgba(230, 202, 133, 0.16);
     }
 
     .glass-pill-cyan {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.14) 0%, rgba(2, 132, 199, 0.06) 100%);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(2, 132, 199, 0.08) 100%);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(56, 189, 248, 0.38);
-      border-top: 1px solid rgba(186, 230, 253, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      border-top: 1px solid rgba(186, 230, 253, 0.7);
       color: #bae6fd;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 16px rgba(56, 189, 248, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 16px rgba(56, 189, 248, 0.16);
     }
 
     .tnum {
@@ -138,11 +124,23 @@
     input[type="text"], textarea {
       cursor: text;
     }
+
+    /* Zen Dynamic Desktop Wallpaper Mode */
+    body.zen-active .hud-element {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateY(-8px);
+    }
+    body.zen-active #zen-exit-pill {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body class="bg-[#03050c] text-slate-100 font-sans h-full overflow-hidden select-none relative">
 
-  <!-- Stardust Dynamic Interactive Particle Canvas Overlay -->
+  <!-- Subtle Ambient Magnetic Aura Canvas Overlay -->
   <canvas id="cursor-stardust-canvas" class="pointer-events-none fixed inset-0 z-[99998] h-full w-full"></canvas>
 
   <!-- Tactile SVG Film Grain Texture Overlay -->
@@ -154,7 +152,7 @@
   </svg>
 
   <!-- Deep Celestial Atmospheric Vignette -->
-  <div class="pointer-events-none fixed inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(3,5,12,0.92)_100%)]"></div>
+  <div class="pointer-events-none fixed inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(3,5,12,0.92)_100%)]"></div>
 
   <!-- Magnetic Interactive Golden Cursor Aura & Rings (Always on top z-[99999]) -->
   <div id="magnetic-cursor-dot" class="pointer-events-none fixed z-[99999] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e6ca85] shadow-[0_0_12px_#e6ca85] transition-transform duration-75"></div>
@@ -169,14 +167,21 @@
   <!-- 3D WebGL Canvas Layer -->
   <div id="canvas-container" class="absolute inset-0 z-0"></div>
 
-  <!-- Primary Heads-Up Interface Overlay -->
-  <div class="relative z-20 flex flex-col justify-between h-full p-4 sm:p-6 pointer-events-none">
+  <!-- Zen Mode Floating Exit Pill -->
+  <div id="zen-exit-pill" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-500 luxury-panel px-4 py-2 rounded-full flex items-center gap-2.5 text-xs font-mono text-[#e6ca85] shadow-2xl border border-[#e6ca85]/40">
+    <span class="w-2 h-2 rounded-full bg-[#e6ca85] animate-ping"></span>
+    <span>Dynamic Desktop · Press 'Z' or Click to Exit Zen</span>
+    <button id="btn-exit-zen" class="ml-2 px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white transition-all text-[10px]">Exit</button>
+  </div>
 
-    <!-- Top Architectural Header -->
-    <header class="flex flex-wrap items-center justify-between gap-4 pointer-events-auto luxury-panel px-6 py-3 rounded-2xl">
+  <!-- Primary Heads-Up Interface Overlay -->
+  <div class="relative z-20 flex flex-col justify-between h-full p-3 sm:p-5 pointer-events-none">
+
+    <!-- Top Architectural Header with Integrated Pancha Kritya 5 Phases -->
+    <header class="hud-element flex flex-wrap items-center justify-between gap-3 pointer-events-auto luxury-panel px-5 py-2.5 rounded-2xl transition-all duration-300">
       
       <!-- Brand & Version Identity -->
-      <div class="flex items-center space-x-3.5">
+      <div class="flex items-center space-x-3">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#e6ca85]/20 via-slate-900 to-amber-500/20 border border-[#e6ca85]/40 flex items-center justify-center font-serif text-base font-bold text-[#e6ca85] shadow-lg shadow-amber-950/40">
           ॐ
         </div>
@@ -185,137 +190,126 @@
             <span class="font-serif font-bold tracking-[0.16em] text-sm text-white uppercase">MAHADEV</span>
             <span class="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#e6ca85]/15 border border-[#e6ca85]/30 text-[#e6ca85] tnum">v3.2.0</span>
           </div>
-          <span class="text-[9.5px] font-mono text-slate-400 tracking-[0.12em] uppercase">
-            VEDIC LOKAS · ATOMIC TO BRAHMANDA
+          <span class="text-[9px] font-mono text-slate-400 tracking-[0.12em] uppercase">
+            6 VEDIC LOKAS · TANDAVA COSMOS
           </span>
         </div>
       </div>
 
+      <!-- Integrated 5 Pancha Kritya Cosmic Phases (Srishti, Sthiti, Samhara, Tirobhava, Anugraha) -->
+      <div class="hidden xl:flex items-center space-x-1 font-mono text-[11px] bg-black/40 p-1 rounded-xl border border-white/10">
+        <button id="btn-mode-srishti" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all" title="1. Srishti (Creation) — Intake, PRD, Phased Planning">
+          1. SRISHTI
+        </button>
+        <button id="btn-mode-sthiti" class="px-3 py-1 rounded-lg bg-[#e6ca85]/25 text-[#e6ca85] border border-[#e6ca85]/50 font-semibold shadow-md shadow-amber-950/40 transition-all" title="2. Sthiti (Preservation) — 9-Tier Verification, LSP, Container Stack">
+          2. STHITI
+        </button>
+        <button id="btn-mode-samhara" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all" title="3. Samhara (Dissolution) — Unused Code Pruning, Maha-Closer, Secrets Purge">
+          3. SAMHARA
+        </button>
+        <button id="btn-mode-tirobhava" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all" title="4. Tirobhava (Veiling) — Zero Secret Sandbox, PII Redaction">
+          4. TIROBHAVA
+        </button>
+        <button id="btn-mode-anugraha" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all" title="5. Anugraha (Grace) — Polished Delivery, Permanent Memory, Founder Value">
+          5. ANUGRAHA
+        </button>
+      </div>
+
       <!-- Navigation Dossier Links -->
       <nav class="hidden lg:flex items-center space-x-1 font-mono text-[11px]">
-        <button id="nav-philosophy" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+        <button id="nav-lokas" class="px-3 py-1.5 rounded-lg text-[#e6ca85] bg-[#e6ca85]/10 border border-[#e6ca85]/30 hover:bg-[#e6ca85]/20 transition-all font-semibold">
+          Lokas
+        </button>
+        <button id="nav-philosophy" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
           Metaphysics
         </button>
-        <button id="nav-lokas" class="px-3.5 py-1.5 rounded-lg text-[#e6ca85] bg-[#e6ca85]/10 border border-[#e6ca85]/30 hover:bg-[#e6ca85]/20 transition-all font-semibold">
-          Vedic Lokas & Spheres
-        </button>
-        <button id="nav-phi" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+        <button id="nav-phi" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
           Φ Harmonics
         </button>
-        <button id="nav-hardware" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
+        <button id="nav-hardware" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
           Trishula HW
         </button>
-        <button id="nav-verification" class="px-3.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/10 transition-all">
-          9-Tier Gate
-        </button>
-        <button id="nav-terminal" class="px-3.5 py-1.5 rounded-lg text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all font-semibold flex items-center gap-1.5">
+        <button id="nav-terminal" class="px-3 py-1.5 rounded-lg text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all font-semibold flex items-center gap-1.5">
           <svg class="w-3 h-3 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
           <span>Console</span>
         </button>
       </nav>
 
-      <!-- Telemetry & Audio Toggle -->
-      <div class="flex items-center space-x-2.5 font-mono text-[11px]">
+      <!-- Telemetry, Audio, Golden Spiral & Dynamic Desktop Zen Toggle -->
+      <div class="flex items-center space-x-2 font-mono text-[11px]">
         <!-- Active Zoom Scale Indicator -->
-        <div class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 tnum text-[10px]">
+        <div class="hidden md:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-black/50 border border-white/10 tnum text-[10px]">
           <span class="w-1.5 h-1.5 rounded-full bg-[#e6ca85] animate-ping"></span>
           <span id="telemetry-scale" class="text-[#e6ca85] font-bold">VEDIC LOKAS · SOLAR SCALE</span>
         </div>
 
         <!-- Golden Spiral Toggle -->
-        <button id="btn-toggle-phi" class="px-3 py-1.5 rounded-lg bg-[#e6ca85]/15 border border-[#e6ca85]/40 text-[#e6ca85] hover:bg-[#e6ca85]/25 transition-all flex items-center gap-1.5">
+        <button id="btn-toggle-phi" class="px-2.5 py-1.5 rounded-lg bg-[#e6ca85]/15 border border-[#e6ca85]/40 text-[#e6ca85] hover:bg-[#e6ca85]/25 transition-all flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-[#e6ca85]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10 6 6 0 0 1-6 6 3 3 0 0 1-3-3 1 1 0 0 1 1-1"></path></svg>
-          <span id="phi-toggle-label">Φ Spiral: On</span>
+          <span id="phi-toggle-label" class="hidden sm:inline">Φ Spiral</span>
         </button>
 
         <!-- 432 Hz Drone Toggle -->
-        <button id="btn-audio-toggle" class="px-3.5 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-[#e6ca85]/40 text-slate-300 hover:text-white transition-all flex items-center gap-2">
+        <button id="btn-audio-toggle" class="px-3 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-[#e6ca85]/40 text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
           <span id="audio-wave-icon" class="flex items-center gap-0.5 h-3">
             <span class="w-0.5 h-1.5 bg-slate-400 rounded-full"></span>
             <span class="w-0.5 h-3 bg-slate-400 rounded-full"></span>
             <span class="w-0.5 h-2 bg-slate-400 rounded-full"></span>
           </span>
-          <span id="audio-toggle-label">432Hz Spanda</span>
+          <span id="audio-toggle-label" class="hidden sm:inline">432Hz</span>
+        </button>
+
+        <!-- Dynamic Desktop Zen Mode Toggle -->
+        <button id="btn-zen-mode" class="px-3 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/25 transition-all flex items-center gap-1.5" title="Toggle Zen Dynamic Desktop Wallpaper Mode (Hotkey: Z)">
+          <svg class="w-3.5 h-3.5 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          <span class="hidden sm:inline">Zen View</span>
         </button>
       </div>
     </header>
 
-    <!-- Bottom-Left Pinned Compact Viewpoint & Scale Navigator -->
-    <div class="flex items-end justify-between w-full">
-      <div id="corner-viewpoint-panel" class="pointer-events-auto luxury-panel p-3.5 rounded-2xl max-w-xs space-y-2.5 shadow-2xl border border-white/10">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2 text-slate-300 font-mono text-[10px] tracking-wider uppercase font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-            <span>Cosmic Navigator</span>
-          </div>
+    <!-- Draggable, High-Opacity Cosmic Navigator (Pinned default bottom-left) -->
+    <div id="corner-viewpoint-panel" class="hud-element pointer-events-auto fixed bottom-6 left-6 z-30 luxury-panel p-3.5 rounded-2xl w-72 space-y-2.5 shadow-[0_24px_60px_rgba(0,0,0,0.9)] border border-white/20 transition-opacity duration-300">
+      
+      <!-- Draggable Header Handle -->
+      <div id="navigator-drag-handle" class="flex items-center justify-between border-b border-white/10 pb-2 cursor-grab active:cursor-grabbing select-none">
+        <div class="flex items-center space-x-2 text-slate-200 font-mono text-[10px] tracking-wider uppercase font-semibold">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8] animate-pulse"></span>
+          <span>Cosmic Navigator</span>
+        </div>
+        <div class="flex items-center gap-1">
           <button id="btn-toggle-rotate" class="text-[9px] font-mono px-2 py-0.5 rounded bg-[#e6ca85]/15 border border-[#e6ca85]/30 text-[#e6ca85] hover:bg-[#e6ca85]/25 transition-all">
-            Orbit: Active
+            Orbit: Paused
           </button>
         </div>
-
-        <!-- Scale Presets: Atomic (0.8u), Kailash (22u), System (95u), Universal (850u) -->
-        <div class="grid grid-cols-4 gap-1 font-mono text-[9.5px]">
-          <button id="btn-scale-atomic" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/5 transition-all text-center">
-            Atomic
-          </button>
-          <button id="btn-scale-kailash" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-[#e6ca85] border border-white/5 transition-all text-center">
-            Kailash
-          </button>
-          <button id="btn-scale-system" class="px-1.5 py-1 rounded-md bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/40 font-semibold transition-all text-center">
-            Lokas
-          </button>
-          <button id="btn-scale-universal" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-purple-500/20 text-slate-300 hover:text-purple-300 border border-white/5 transition-all text-center">
-            Universe
-          </button>
-        </div>
-
-        <p class="text-[10px] text-slate-400 font-sans leading-tight">
-          • Scroll wheel to zoom from atomic quark bindu to universal macrocosm<br/>
-          • Drag canvas to rotate cosmic realms
-        </p>
       </div>
 
-      <div class="hidden sm:block"></div>
+      <!-- Scale Presets: Atomic (0.8u), Kailash (22u), System (92u), Universal (850u) -->
+      <div class="grid grid-cols-4 gap-1 font-mono text-[9.5px]">
+        <button id="btn-scale-atomic" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/5 transition-all text-center">
+          Atomic
+        </button>
+        <button id="btn-scale-kailash" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-amber-500/20 text-slate-300 hover:text-[#e6ca85] border border-white/5 transition-all text-center">
+          Kailash
+        </button>
+        <button id="btn-scale-system" class="px-1.5 py-1 rounded-md bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/40 font-semibold transition-all text-center">
+          Lokas
+        </button>
+        <button id="btn-scale-universal" class="px-1.5 py-1 rounded-md bg-white/5 hover:bg-purple-500/20 text-slate-300 hover:text-purple-300 border border-white/5 transition-all text-center">
+          Universe
+        </button>
+      </div>
+
+      <p class="text-[10px] text-slate-300 font-sans leading-tight">
+        • Drag handle to reposition panel anywhere<br/>
+        • Scroll wheel to focal zoom on any agent or star<br/>
+        • Drag background canvas to orbit view
+      </p>
     </div>
-
-    <!-- Bottom Pancha Kritya Architectural Rail -->
-    <footer class="pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-4 luxury-panel px-6 py-4 rounded-2xl">
-      <!-- Active Phase Info -->
-      <div class="text-center md:text-left space-y-1">
-        <div class="flex items-center justify-center md:justify-start space-x-2.5">
-          <span id="hud-mode-sanskrit" class="font-cormorant italic text-lg text-[#e6ca85] font-semibold">स्थिति (Sthiti)</span>
-          <span class="text-slate-600">/</span>
-          <span id="hud-mode-title" class="text-xs font-semibold text-white tracking-wide uppercase font-sans">Preservation & Equilibrium</span>
-        </div>
-        <p id="hud-mode-desc" class="text-[11px] text-slate-400 font-sans leading-tight">
-          9-Tier Correctness Verification, LSP diagnostics, and local container orchestration.
-        </p>
-      </div>
-
-      <!-- 5 Cosmic Phase Buttons -->
-      <div class="flex flex-wrap items-center justify-center gap-1.5">
-        <button id="btn-mode-srishti" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
-          1. SRISHTI
-        </button>
-        <button id="btn-mode-sthiti" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/50 font-semibold shadow-md shadow-amber-950/40 transition-all">
-          2. STHITI
-        </button>
-        <button id="btn-mode-samhara" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
-          3. SAMHARA
-        </button>
-        <button id="btn-mode-tirobhava" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
-          4. TIROBHAVA
-        </button>
-        <button id="btn-mode-anugraha" class="px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all">
-          5. ANUGRAHA
-        </button>
-      </div>
-    </footer>
 
   </div>
 
   <!-- Dynamic Hover Card for 3D Nodes -->
-  <div id="agent-hover-card" class="fixed z-40 pointer-events-none opacity-0 transition-opacity duration-200 glass-card p-4 rounded-2xl max-w-xs text-left shadow-2xl border border-white/10">
+  <div id="agent-hover-card" class="fixed z-40 pointer-events-none opacity-0 transition-opacity duration-200 glass-card p-4 rounded-2xl max-w-xs text-left shadow-2xl border border-white/15">
     <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-2 mb-2">
       <div>
         <span id="hover-loka" class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-[#e6ca85] border border-[#e6ca85]/30 font-semibold"></span>
@@ -343,7 +337,7 @@
   </div>
 
   <!-- Dynamic Hover Popover for Orbiting Skills & Plugins Satellites -->
-  <div id="satellite-hover-popover" class="fixed z-40 pointer-events-none opacity-0 transition-opacity duration-200 glass-card p-4 rounded-2xl max-w-sm text-left shadow-2xl border border-white/15 backdrop-blur-3xl">
+  <div id="satellite-hover-popover" class="fixed z-40 pointer-events-none opacity-0 transition-opacity duration-200 glass-card p-4 rounded-2xl max-w-sm text-left shadow-2xl border border-white/20 backdrop-blur-3xl">
     <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-2 mb-2">
       <span id="sat-popover-badge" class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-semibold flex items-center gap-1.5"></span>
       <span id="sat-popover-owner" class="text-[9.5px] font-mono text-slate-400"></span>
@@ -358,7 +352,7 @@
   </div>
 
   <!-- Agent Details Slide Drawer with Embedded 3D Inspector Viewport -->
-  <aside id="agent-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-[#070a14]/85 border-l border-white/15 backdrop-blur-3xl z-50 transform translate-x-full transition-transform duration-300 p-6 flex flex-col justify-between overflow-y-auto space-y-5 shadow-2xl">
+  <aside id="agent-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-[#070a14]/92 border-l border-white/15 backdrop-blur-3xl z-50 transform translate-x-full transition-transform duration-300 p-6 flex flex-col justify-between overflow-y-auto space-y-5 shadow-2xl">
     <div class="space-y-4">
       <!-- Drawer Header -->
       <div class="flex items-start justify-between border-b border-white/10 pb-4">
@@ -449,8 +443,8 @@
   </aside>
 
   <!-- Informative Knowledge Modal (Editorial Monograph Layout with Pure Glassmorphism) -->
-  <div id="info-modal" class="fixed inset-0 z-50 bg-[#03050c]/80 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 hidden">
-    <div class="glass-card border border-white/15 w-full max-w-5xl max-h-[88vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+  <div id="info-modal" class="fixed inset-0 z-50 bg-[#03050c]/85 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 hidden">
+    <div class="glass-card border border-white/20 w-full max-w-5xl max-h-[88vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-white/[0.03]">

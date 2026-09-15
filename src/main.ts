@@ -78,12 +78,10 @@ class App {
     this.stardustCanvas.height = window.innerHeight;
   }
 
-  private setupMagneticCursorAndStardust() {
-    const stardustColors = ['#e6ca85', '#fef08a', '#38bdf8', '#ffffff', '#818cf8', '#34d399'];
-
-    window.addEventListener('mousemove', (e) => {
-      this.mousePos.x = e.clientX;
-      this.mousePos.y = e.clientY;
+private setupMagneticCursorAndStardust() {
+     window.addEventListener('mousemove', (e) => {
+       this.mousePos.x = e.clientX;
+       this.mousePos.y = e.clientY;
 
       if (this.cursorDot) {
         this.cursorDot.style.left = `${e.clientX}px`;
@@ -94,47 +92,43 @@ class App {
         this.cursorCrosshair.style.top = `${e.clientY}px`;
       }
 
-      // Calculate cursor velocity and spawn stardust particles
+      // Calculate cursor velocity and spawn subtle aura particles (minimal, slow fade)
       const dx = e.clientX - this.lastMousePos.x;
       const dy = e.clientY - this.lastMousePos.y;
       const speed = Math.sqrt(dx * dx + dy * dy);
 
-      if (speed > 1.5) {
-        const count = Math.min(6, Math.floor(speed * 0.4));
-        for (let i = 0; i < count; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const velocity = (Math.random() * 1.5 + 0.5) * (speed * 0.08);
-          this.stardustParticles.push({
-            x: e.clientX + (Math.random() - 0.5) * 8,
-            y: e.clientY + (Math.random() - 0.5) * 8,
-            vx: Math.cos(angle) * velocity + dx * 0.05,
-            vy: Math.sin(angle) * velocity + dy * 0.05,
-            size: Math.random() * 2.5 + 1.0,
-            color: stardustColors[Math.floor(Math.random() * stardustColors.length)],
-            alpha: 0.9,
-            decay: Math.random() * 0.025 + 0.015,
-          });
-        }
+      // ponytail: aura only, keep particle count tiny (max 1/move) so trail stays a whisper
+      if (speed > 4 && this.stardustParticles.length < 24) {
+        this.stardustParticles.push({
+          x: e.clientX + (Math.random() - 0.5) * 6,
+          y: e.clientY + (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: -0.15 - Math.random() * 0.2,
+          size: Math.random() * 1.4 + 0.5,
+          color: Math.random() > 0.25 ? '#e6ca85' : '#fef08a',
+          alpha: 0.35,
+          decay: Math.random() * 0.02 + 0.02,
+        });
       }
 
       this.lastMousePos.x = e.clientX;
       this.lastMousePos.y = e.clientY;
     });
 
-    // Click Ripple Shockwave Effect
+    // Gentle Click Shimmer (soft, small burst instead of shockwave)
     window.addEventListener('click', (e) => {
-      for (let i = 0; i < 28; i++) {
-        const angle = (i / 28) * Math.PI * 2;
-        const speed = Math.random() * 4.0 + 2.0;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 + Math.random() * 0.5;
+        const speed = Math.random() * 1.2 + 0.6;
         this.stardustParticles.push({
           x: e.clientX,
           y: e.clientY,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: Math.random() * 3.0 + 1.5,
+          size: Math.random() * 1.4 + 0.6,
           color: '#e6ca85',
-          alpha: 1.0,
-          decay: 0.03,
+          alpha: 0.5,
+          decay: 0.045,
         });
       }
     });
@@ -431,7 +425,7 @@ class App {
   }
 
   private setupUIControls() {
-    // Mode Buttons (Pancha Kritya)
+    // Mode Buttons (Pancha Kritya — now integrated in top header)
     const modes = ['srishti', 'sthiti', 'samhara', 'tirobhava', 'anugraha'];
     modes.forEach((mode) => {
       const btn = document.getElementById(`btn-mode-${mode}`);
@@ -443,16 +437,15 @@ class App {
             const b = document.getElementById(`btn-mode-${m}`);
             if (b) {
               b.className =
-                'px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-slate-900/60 text-slate-400 border border-white/5 hover:border-white/20 transition-all';
+                'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all';
             }
           });
           btn.className =
-            'px-3.5 py-1.5 rounded-xl font-mono text-[11px] bg-[#e6ca85]/20 text-[#e6ca85] border border-[#e6ca85]/50 font-semibold shadow-md shadow-amber-950/40 transition-all';
+            'px-3 py-1 rounded-lg bg-[#e6ca85]/25 text-[#e6ca85] border border-[#e6ca85]/50 font-semibold shadow-md shadow-amber-950/40 transition-all';
 
           if (this.scene) {
             this.scene.setMode(mode);
           }
-          this.updateModeHUD(mode);
         });
       }
     });
@@ -528,6 +521,79 @@ class App {
         if (drawer) drawer.classList.add('translate-x-full');
       });
     }
+
+    this.setupNavigatorDragging();
+    this.setupZenMode();
+  }
+
+  // Draggable Cosmic Navigator panel (repositionable anywhere via header handle)
+  private setupNavigatorDragging() {
+    const panel = document.getElementById('corner-viewpoint-panel');
+    const handle = document.getElementById('navigator-drag-handle');
+    if (!panel || !handle) return;
+
+    let isDraggingPanel = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    handle.addEventListener('mousedown', (e) => {
+      // Ignore drags initiated on the Orbit toggle button
+      if ((e.target as HTMLElement).id === 'btn-toggle-rotate') return;
+
+      e.preventDefault();
+      isDraggingPanel = true;
+      const rect = panel.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      panel.style.right = 'auto';
+      handle.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDraggingPanel) return;
+      const x = Math.min(window.innerWidth - 80, Math.max(8, e.clientX - offsetX));
+      const y = Math.min(window.innerHeight - 80, Math.max(8, e.clientY - offsetY));
+      panel.style.left = `${x}px`;
+      panel.style.top = `${y}px`;
+      panel.style.bottom = 'auto';
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDraggingPanel) {
+        isDraggingPanel = false;
+        handle.style.cursor = 'grab';
+      }
+    });
+  }
+
+  // Dynamic Desktop / Zen Wallpaper Mode (hides HUD overlay for background usage)
+  private setupZenMode() {
+    const zenBtn = document.getElementById('btn-zen-mode');
+    const exitPill = document.getElementById('zen-exit-pill');
+    const exitBtn = document.getElementById('btn-exit-zen');
+
+    const enterZen = () => {
+      document.body.classList.add('zen-active');
+      audioEngine.playChime(432, 0.2);
+    };
+    const exitZen = () => {
+      document.body.classList.remove('zen-active');
+      audioEngine.playChime(576, 0.15);
+    };
+
+    if (zenBtn) zenBtn.addEventListener('click', enterZen);
+    if (exitBtn) exitBtn.addEventListener('click', (e) => { e.stopPropagation(); exitZen(); });
+    if (exitPill) exitPill.addEventListener('click', () => { if (document.body.classList.contains('zen-active')) exitZen(); });
+
+    // Hotkey: Z toggles Zen mode (ignored while typing in inputs)
+    window.addEventListener('keydown', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+      if (e.key.toLowerCase() === 'z') {
+        if (document.body.classList.contains('zen-active')) exitZen();
+        else enterZen();
+      }
+    });
   }
 
   private setupModalControls() {
@@ -904,41 +970,6 @@ class App {
           : 'px-3.5 py-1.5 rounded-lg bg-slate-900/90 border border-white/10 hover:border-[#e6ca85]/40 text-slate-300 hover:text-white transition-all flex items-center gap-2';
       });
     }
-  }
-
-  private updateModeHUD(mode: string) {
-    const titles: Record<string, { sanskrit: string; title: string; desc: string }> = {
-      srishti: {
-        sanskrit: 'सृष्टि (Srishti)',
-        title: 'Cosmic Creation & Ideation',
-        desc: 'Deep planning, architectural alternatives synthesis, and autonomous build pipelines.',
-      },
-      sthiti: {
-        sanskrit: 'स्थिति (Sthiti)',
-        title: 'Preservation & Equilibrium',
-        desc: '9-Tier Correctness Verification, LSP diagnostics, and local container orchestration.',
-      },
-      samhara: {
-        sanskrit: 'संहार (Samhara)',
-        title: 'Dissolution & Purification',
-        desc: 'Maha-Closer cache wiping, dead code elimination, and zero-secret enforcement.',
-      },
-      tirobhava: {
-        sanskrit: 'तिरोभाव (Tirobhava)',
-        title: 'Veiling & Abstraction',
-        desc: 'Zero-sudo isolation, least-privilege database roles, and jargon-free Founder abstractions.',
-      },
-      anugraha: {
-        sanskrit: 'अनुग्रह (Anugraha)',
-        title: 'Grace & Delivery',
-        desc: 'Sovereign deliverable release with persistent episodic memory anchored.',
-      },
-    };
-
-    const info = titles[mode] || titles.sthiti;
-    document.getElementById('hud-mode-sanskrit')!.textContent = info.sanskrit;
-    document.getElementById('hud-mode-title')!.textContent = info.title;
-    document.getElementById('hud-mode-desc')!.textContent = info.desc;
   }
 
   private setupTelemetryTicker() {

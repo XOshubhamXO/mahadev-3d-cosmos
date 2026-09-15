@@ -346,7 +346,7 @@ export class AgentConstellation {
     });
   }
 
-  // 5. Multi-Tiered Non-Overlapping Orbital Kinematics
+  // 5. Multi-Tiered Non-Overlapping Orbital Kinematics & Active Node Revolutions
   public update(delta: number) {
     this.time += delta;
 
@@ -359,44 +359,46 @@ export class AgentConstellation {
 
       if (!nodeGroup) return;
 
-      // Angular Motion along Discrete Concentric Loka Planes
+      // (1) Active Angular Revolution along Concentric Loka Orbital Plane
       const currentTheta = agent.angularOffset + this.time * agent.orbitSpeed;
       const r = agent.orbitRadius;
 
-      // Non-Overlapping Coordinates with subtle vertical harmonic breathing
+      // Coordinates with subtle vertical harmonic breathing
       const x = Math.cos(currentTheta) * r;
       const y = agent.orbitHeight + Math.sin(currentTheta * 2) * 0.35;
       const z = Math.sin(currentTheta) * r;
 
       nodeGroup.position.set(x, y, z);
 
-      // Self-Rotation & Gyro Precession
-      mesh.rotation.x += delta * 0.6;
-      mesh.rotation.y += delta * 0.9;
+      // (2) Intrinsic 3D Node Self-Rotation (Tumbling Crystalline Jewel)
+      mesh.rotation.x += delta * 0.85;
+      mesh.rotation.y += delta * 1.25;
+      mesh.rotation.z += delta * 0.45;
 
       if (halo) {
-        halo.rotation.x += delta * 0.3;
-        halo.rotation.z += delta * 0.5;
+        halo.rotation.x += delta * 0.75;
+        halo.rotation.y += delta * 0.65;
+        halo.rotation.z += delta * 0.95;
       }
 
-      // Orbiting Skills Satellites Kinematics (Golden Clockwise Rotation)
+      // (3) Orbiting Skills Satellites Kinematics (Golden Clockwise Rotation)
       if (skillsGroup) {
-        skillsGroup.rotation.z += delta * 1.4;
+        skillsGroup.rotation.z += delta * 1.8;
         skillsGroup.children.forEach((child) => {
           if (child instanceof THREE.Mesh) {
-            child.rotation.x += delta * 2.0;
-            child.rotation.y += delta * 2.5;
+            child.rotation.x += delta * 2.5;
+            child.rotation.y += delta * 3.0;
           }
         });
       }
 
-      // Orbiting Plugins Satellites Kinematics (Cyan Counter-Clockwise Rotation)
+      // (4) Orbiting Plugins Satellites Kinematics (Cyan Counter-Clockwise Rotation)
       if (pluginsGroup) {
-        pluginsGroup.rotation.z -= delta * 1.1;
+        pluginsGroup.rotation.z -= delta * 1.5;
         pluginsGroup.children.forEach((child) => {
           if (child instanceof THREE.Mesh) {
-            child.rotation.x -= delta * 1.8;
-            child.rotation.z += delta * 2.2;
+            child.rotation.x += delta * 2.2;
+            child.rotation.z += delta * 2.8;
           }
         });
       }
@@ -405,7 +407,7 @@ export class AgentConstellation {
     // Gentle precession of Loka markers
     this.lokaNameSprites.forEach((sprite, idx) => {
       const loka = VEDIC_LOKAS[idx];
-      const theta = this.time * loka.speed * 0.4;
+      const theta = this.time * loka.speed * 0.25;
       sprite.position.x = Math.cos(theta) * loka.radius;
       sprite.position.z = Math.sin(theta) * loka.radius;
     });

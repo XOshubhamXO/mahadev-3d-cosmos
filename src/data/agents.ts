@@ -39,7 +39,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: 0.0,
     color: "#e6ca85", // Champagne Gold
     accentColor: "#ca8a04",
-    speed: 0.0075,
+    speed: 0.16,
   },
   {
     id: "vaikuntha",
@@ -51,7 +51,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: 4.5,
     color: "#38bdf8", // Celestial Cyan / Blue Lotus
     accentColor: "#0284c7",
-    speed: -0.0055,
+    speed: -0.11,
   },
   {
     id: "brahmaloka",
@@ -63,7 +63,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: 9.0,
     color: "#f59e0b", // Sacred Amber / Crystal
     accentColor: "#d97706",
-    speed: 0.0042,
+    speed: 0.08,
   },
   {
     id: "devlok",
@@ -75,7 +75,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: 2.5,
     color: "#60a5fa", // Indraneela Sapphire
     accentColor: "#2563eb",
-    speed: -0.0032,
+    speed: -0.055,
   },
   {
     id: "prithvilok",
@@ -87,7 +87,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: -3.5,
     color: "#34d399", // Terrestrial Jade Emerald
     accentColor: "#059669",
-    speed: 0.0024,
+    speed: 0.038,
   },
   {
     id: "yamlok",
@@ -99,7 +99,7 @@ export const VEDIC_LOKAS: VedicLokaInfo[] = [
     height: -8.5,
     color: "#f87171", // Ruby Obsidian & Crimson Flame
     accentColor: "#dc2626",
-    speed: -0.0018,
+    speed: -0.026,
   },
 ];
 
