@@ -569,7 +569,7 @@ private setupMagneticCursorAndStardust() {
   // Dynamic Desktop / Zen Wallpaper Mode (hides HUD overlay for background usage)
   private setupZenMode() {
     const zenBtn = document.getElementById('btn-zen-mode');
-    const exitPill = document.getElementById('zen-exit-pill');
+    // Removed exitPill per Zen mode simplification
     const exitBtn = document.getElementById('btn-exit-zen');
 
     const enterZen = () => {
